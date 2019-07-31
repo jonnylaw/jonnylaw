@@ -1,4 +1,4 @@
-Package: jonnylaw
+Package: jonnyblog
 Type: Package
 Title: Private package for my blog containing Bayesian inference algorithms
 Version: 0.1.0
