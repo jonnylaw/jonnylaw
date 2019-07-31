@@ -16,3 +16,5 @@ Imports:
     ggplot2,
     readr,
     knitr
+URL: https://github.com/jonnylaw/jonnyblog
+BugReports: https://github.com/jonnylaw/jonnyblog/issues
