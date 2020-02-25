@@ -1,0 +1,249 @@
+---
+title: "Analysing .fit files in R"
+author: "Jonny Law"
+date: '2019-11-04'
+slug: analysing-fit-files-in-R
+categories:
+  - R
+tags: []
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyr); library(dplyr); library(readr); library(ggplot2); library(jonnylaw);
+library(reticulate)
+library(leaflet)
+theme_set(theme_minimal())
+```
+
+Garmin running watches output a file type called .fit, the developer SDK can be downloaded from the [ANT website](https://www.thisisant.com/developer/fit-sdk-release-notes). There is aalso Python library named [fitparse](https://github.com/dtcooper/python-fitparse) which has been written to parse .fit files. This blog post will show you how to use [reticulate](https://rstudio.github.io/reticulate/) to parse a .fit file.
+
+## Parsing 
+
+```{r}
+reticulate::py_install("fitparse", method = "auto", conda = "auto")
+```
+
+The library can be imported as an R object.
+
+```{r}
+fitparse <- reticulate::import("fitparse")
+```
+
+Then methods and classes defined in the fitparse Python libary can be accessed using the `$` notation. Typing `$` after fitparse (and hitting the `TAB` key) in the RStudio IDE gives a list of top-level methods and classes defined in the fitparse library. 
+
+```{r, echo=FALSE}
+fit_file <- "/Users/jonnylaw/Downloads/strava_history/activities/1001800515.fit"
+```
+
+```{r}
+ff <- fitparse$FitFile(fit_file)
+```
+
+We can use the `get_messages` method on the `FitFile`. This returns a generator, this is a special type of lazy list in Python.
+
+```{r}
+generator <- ff$get_messages("record")
+```
+
+`iterate` is a function provided by the `reticulate` library which can be used to traverse a Python generator:
+
+```{r}
+activity <- reticulate::iterate(ff$get_messages("record"), function(x) x$get_values())
+```
+
+This evaluates the generator and applies the function `get_values` to retrieve the details associated with this activity. A list object is returned by R, the first element looks like this:
+
+```{r}
+activity[[1]]
+```
+
+We want to transform this list of lists into a dataframe. The most straightforward way is to extract the elements of interest using the `map` function from [purrr](https://purrr.tidyverse.org/):
+
+```{r}
+(activity_tibble <- activity %>%
+  map_dfr(function(x) tibble(
+    timestamp = readr::parse_datetime(as.character(x$timestamp)),
+    latitude = x$position_lat,
+    longitude = x$position_long,
+    elevation = x$enhanced_altitude,
+    heart_rate = x$heart_rate,
+    cadence = x$cadence
+    )))
+```
+
+Notice that the latitude and longitude don't look correct, it turns out they are in semicircles and can be converted to a recognisable coordinate system using the following function.
+
+```{r}
+semicircle_to_degrees <- function(semicircle)
+  semicircle * (180 / 2**31)
+```
+
+Applying the function to the latitude and longitude models.
+
+```{r}
+activity_tibble <- activity_tibble %>% 
+  mutate_at(vars(latitude, longitude), semicircle_to_degrees)
+```
+
+This is a very basic summary of the activity. We can derive the distance per timestep using the longitude, latitude and timestamp fields.
+
+```{r}
+(activity_tibble <- activity_tibble %>%
+  mutate(
+    time_diff_to_prev = as.numeric(difftime(timestamp, lag(timestamp, default = .$timestamp[1]))),
+    cumtime = cumsum(time_diff_to_prev),
+    dist_to_prev = c(0, sp::spDists(
+      x = as.matrix(.[, c("longitude", "latitude")]),
+      longlat = TRUE,
+      segments = TRUE
+    )),
+    elevation_to_prev = elevation - lag(elevation),
+    distance = cumsum(dist_to_prev)
+    )) 
+```
+
+## Summarising
+
+We can calculate a high level summary of the activity similar to what you would find on Garmin connect.
+
+```{r, echo=FALSE}
+activity_tibble %>%
+  summarise(
+    total_distance = sum(dist_to_prev),
+    elapsed_time = max(timestamp) - min(timestamp),
+    moving_time = lubridate::seconds_to_period(sum(time_diff_to_prev) - sum(
+      ifelse(dist_to_prev == 0, time_diff_to_prev, 0)
+    )),
+    elevation_gain = sum(if_else(elevation_to_prev > 0, elevation_to_prev, 0), na.rm = TRUE),
+    average_heart_rate = round(mean(heart_rate), 0)
+  ) %>%
+  mutate(average_pace = hms::as_hms(as.numeric(moving_time) / total_distance)) %>% 
+  knitr::kable()
+```
+
+We can recreate plots commonly found on activity websites such as training peaks, Strava and Garmin Connect, for instance average speed for each 1km:
+
+```{r, echo=FALSE}
+activity_tibble %>% 
+  mutate(lap = distance %/% 1) %>% 
+  group_by(lap) %>% 
+  summarise(lap_distance = sum(dist_to_prev), 
+            lap_time = sum(time_diff_to_prev), 
+            pace = hms::as_hms(lap_time / lap_distance)) %>% 
+  ggplot(aes(x = lap, y = pace)) +
+  geom_col() +
+  xlab("Distance (km)") +
+  ylab("Pace (min / km)") +
+  labs(title = "Average pace per lap")
+```
+
+```{r, echo=FALSE}
+activity_tibble %>% 
+  mutate(distance = cumsum(dist_to_prev)) %>% 
+  ggplot(aes(x = distance, y = elevation)) +
+  geom_area(alpha = 0.5) +
+  geom_line(aes(x = distance, y = heart_rate), colour = "#ff0000", alpha = 0.5) +
+  xlab("Distance (km)") +
+  ylab("Elevation (m)") +
+  labs(title = "Elevation and heart rate")
+```
+
+## Analysing heart rate data
+
+We can determine how hard the activity was for the athlete using heart rate data. Heart rate is an individual metric and differs between athletes running the same pace. To that end, we must compute the heart rate relative to the maximum heart rate or using [heart rate reserve](https://fellrnr.com/wiki/Heart_Rate_Reserve) (taking into account both the maximum and resting heart rate). Using the max heart rate and resting heart rate, training zones can be determined. These zones are broad and for the convenience of the athlete (and coach) when performing workouts at a given intensity. This intensity should vary depending on the purpose of the workout (recovery, threshold, VO2 max intervals etc.).
+
+Suggested heart rate zones according to [Pete Pfitzinger](https://www.amazon.co.uk/Advanced-Marathoning-Pete-Pfitzinger/dp/149256866X) are: 
+
+1. Active recovery: less than 76% MHR
+2. General Aerobic: 70%-81% MHR
+3. Tempo (Marathon pace): 81%-88% MHR
+4. Lactate Threshold: 82%-92% MHR
+5. Anaerobic: 95%+
+
+For my maximum heart rate of 189, the zones can be written as.
+
+```{r, echo=FALSE}
+zones <- c(
+  "one" = 0.76 * 189,
+  "two" = 0.81 * 189,
+  "three" = 0.88 * 189,
+  "four" = 0.92 * 189,
+  "five" = 189)
+```
+
+```{r, echo=FALSE}
+knitr::kable(rownames_to_column(data.frame(heart_rate = round(zones, 0)), var = "zone"))
+```
+
+Then the time in zones can be plotted for the given activity.
+
+```{r, echo=FALSE}
+time_in_zones <- activity_tibble %>%
+  mutate(
+    zone = dplyr::case_when(
+      heart_rate <= zones[1] ~ names(zones[1]),
+      heart_rate <= zones[2] ~ names(zones[2]),
+      heart_rate <= zones[3] ~ names(zones[3]),
+      heart_rate <= zones[4] ~ names(zones[4]),
+      heart_rate <= zones[5] ~ names(zones[5]),
+    )
+  ) %>%
+  mutate(zone = factor(zone, levels = c("one", "two", "three", "four", "five"))) %>%
+  group_by(zone) %>%
+  summarise(time_seconds = sum(time_diff_to_prev))
+
+time_in_zones %>% 
+  ggplot(aes(x = zone, y = time_seconds, fill = zone)) +
+  geom_col() +
+  scale_fill_brewer(type = "seq",
+                             direction = 1,
+                             palette = "Reds") +
+  scale_x_discrete(drop = FALSE) +
+  theme(legend.position = "none") +
+  theme_minimal() +
+  coord_flip() +
+  scale_y_time() +
+  geom_label(aes(label = hms::as_hms(time_seconds))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    axis.ticks.x = element_blank(),
+    axis.text.x = element_blank()
+  ) +
+  labs(title = "Time in zones")
+```
+
+## Training impulse
+
+TRIMP can be used (TRaining IMPulse) to calculate a one-number summary of the activity difficulty, more information on TRIMP can be found [here](https://fellrnr.com/wiki/TRIMP). 
+
+The most straightforward way to calculate TRIMP is calculating the total time in each zone by multiplying the zone number by the total minutes in the corresponding zone.
+
+```{r, echo=FALSE }
+time_in_zones %>% 
+  summarise(trimp_zone = sum(as.numeric(zone) * time_seconds / 60)) %>% 
+  knitr::kable()
+```
+
+This number is straightforward to calculate however it lacks nuance. For instance it remains the same if the athlete is at either the upper or lower end of the heart rate range for a given zone. To account for this TRIMP exp can be calculated:
+
+$$\textrm{TRIMP}^{\textrm{exp}} = \sum_{i=1}^T \textrm{D}_i \cdot \textrm{HRr} \cdot 0.64e^y$$
+
+Where, $\textrm{D}_i$ is the duration of a single measurement (typically one to five seconds on a Garmin watch), HRr is the heart rate reserve (maximum heart rate - resting heart rate), $y$ is the percentage of heart rate reserve multiplied by 1.92 for men and 1.67 for women. 
+
+```{r}
+trimp_exp <- function(heartrate, time_seconds, max_hr, resting_hr, sex = "Male") {
+  heart_rate_reserve <- max_hr - resting_hr
+  hrr <- heartrate / heart_rate_reserve
+  constant <- if_else(sex == "Male", 1.92, 1.67)
+  sum((time_seconds / 60) * hrr * 0.64 * exp(constant * hrr))
+}
+```
+
+```{r, echo=FALSE}
+activity_tibble %>% 
+  summarise(trimp_exp = trimp_exp(heart_rate, time_diff_to_prev, 189, 42)) %>% 
+  knitr::kable()
+```
+
+These summaries can be used to calculate the overall training workload for an athlete to assist with planning and reviewing training plans. This is typically used in addition to training time and distance covered.

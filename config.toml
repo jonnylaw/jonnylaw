@@ -1,0 +1,40 @@
+baseurl = "/"
+publishdir = "docs"
+languageCode = "en-us"
+title = "Bayesian Statistics and Functional Programming "
+theme = "hugo-lithium-theme"
+ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
+
+[permalinks]
+    post = "/:year/:month/:day/:slug/"
+    
+[[menu.main]]
+    name = "Blog"
+    url = "/"
+[[menu.main]]
+    name = "About"
+    url = "/about/"
+[[menu.main]]
+    name = "GitHub"
+    url = "https://github.com/jonnylaw"
+[[menu.main]]
+    name = "Twitter"
+    url = "https://twitter.com/lawsy"
+
+[params]
+    description = "Jonny Law"
+
+    # options for highlight.js (version, additional languages, and theme)
+    highlightjsVersion = "9.11.0"
+    highlightjsCDN = "//cdn.bootcss.com"
+    highlightjsLang = ["r", "yaml", "scala"]
+    highlightjsTheme = "tomorrow-night-eighties"
+
+    MathJaxCDN = "//cdn.bootcss.com"
+    MathJaxVersion = "2.7.1"
+
+    [params.logo]
+    url = "picture_cropped.jpg"
+    width = 50
+    height = 50
+    alt = "Logo"

@@ -1,4 +1,4 @@
-#' Title
+#' Leapfrog Step
 #'
 #' @param gradient
 #' @param step_size
@@ -9,15 +9,15 @@
 #' @export
 #'
 #' @examples
-leapfrog_step <- function(gradient, step_size, position, momentum) {
+leapfrog_step <- function(gradient, step_size, position, momentum, d) {
   momentum1 <- momentum + gradient(position) * 0.5 * step_size
   position1 <- position + step_size * momentum1
-  momentum2 <- momentum + gradient(position1) * 0.5 * step_size
+  momentum2 <- momentum1 + gradient(position1) * 0.5 * step_size
 
-  list(position = position1, momentum = momentum2)
+  matrix(c(position1, momentum2), ncol = d*2)
 }
 
-#' Title
+#' Perform l Leapfrog steps
 #'
 #' @param gradient
 #' @param step_size
@@ -29,17 +29,19 @@ leapfrog_step <- function(gradient, step_size, position, momentum) {
 #' @export
 #'
 #' @examples
-leapfrogs <- function(gradient, step_size, l, position, momentum) {
+leapfrogs <- function(gradient, step_size, l, position, momentum, d) {
   for (i in 1:l) {
-    pos_mom <- leapfrog_step(gradient, step_size, position, momentum)
+    pos_mom <- leapfrog_step(gradient, step_size, position, momentum, d)
+    position <- pos_mom[seq_len(d)]
+    momentum <- pos_mom[-seq_len(d)]
   }
-  list(position = pos_mom[["position"]], momentum = pos_mom[["momentum"]])
+  pos_mom
 }
 
-#' Title
+#' Log Acceptance for the HMC algorithm
 #'
-#' @param propPosition
-#' @param propMomentum
+#' @param prop_position
+#' @param prop_momentum
 #' @param position
 #' @param momentum
 #' @param log_posterior
@@ -48,16 +50,17 @@ leapfrogs <- function(gradient, step_size, l, position, momentum) {
 #' @export
 #'
 #' @examples
-log_acceptance <- function(propPosition,
-                           propMomentum,
+log_acceptance <- function(prop_position,
+                           prop_momentum,
                            position,
                            momentum,
                            log_posterior) {
-  log_posterior(propPosition) + sum(dnorm(propMomentum, log = T)) -
+  a <- log_posterior(prop_position) + sum(dnorm(prop_momentum, log = T)) -
     log_posterior(position) - sum(dnorm(momentum, log = T))
+  if_else(is.na(a), -Inf, min(a, 0.0))
 }
 
-#' Title
+#' HMC Step
 #'
 #' @param log_posterior
 #' @param gradient
@@ -69,25 +72,61 @@ log_acceptance <- function(propPosition,
 #' @export
 #'
 #' @examples
-hmc_step <- function(log_posterior, gradient, step_size, l, position) {
-  d <- length(position)
+hmc_step <- function(log_posterior, gradient, step_size, l, position, d) {
   momentum <- rnorm(d)
-  pos_mom <- leapfrogs(gradient, step_size, l, position, momentum)
-  propPosition <- pos_mom[["position"]]
-  propMomentum <- pos_mom[["momentum"]]
-  a <- log_acceptance(propPosition, propMomentum, position, momentum, log_posterior)
+  pos_mom <- leapfrogs(gradient, step_size, l, position, momentum, d)
+  prop_position <- pos_mom[seq_len(d)]
+  prop_momentum <- pos_mom[-seq_len(d)]
+  a <- log_acceptance(prop_position, prop_momentum, position, momentum, log_posterior)
   if (log(runif(1)) < a) {
-    propPosition
+    prop_position
   } else {
     position
   }
 }
 
-hmc <- function(log_posterior, gradient, step_size, l, initP, m) {
-  out <- matrix(NA_real_, nrow = m, ncol = length(initP))
-  out[1, ] <- initP
+#' Hamiltonian Monte Carlo
+#'
+#' @param log_posterior
+#' @param gradient
+#' @param step_size
+#' @param l
+#' @param theta_0
+#' @param m
+#'
+#' @return
+#' @export
+#'
+#' @examples
+hmc <- function(log_posterior, gradient, step_size, l, theta_0, m) {
+  d <- length(theta_0)
+  out <- matrix(NA_real_, nrow = m, ncol = d)
+  out[1, ] <- theta_0
   for (i in 2:m) {
-    out[i, ] <- hmc_step(log_posterior, gradient, step_size, l, out[i-1,])
+    out[i, ] <- hmc_step(log_posterior, gradient, step_size, l, out[i-1,], d)
   }
   out
+}
+
+#' Hamiltonian Monte Carlo
+#'
+#' Perform HMC and return a dataframe
+#'
+#' @param log_posterior
+#' @param gradient
+#' @param step_size
+#' @param l
+#' @param theta_0
+#' @param m
+#' @param parameter_names
+#'
+#' @return
+#' @export
+#'
+#' @examples
+hmc_df <- function(log_posterior, gradient, step_size, l, theta_0, m, parameter_names) {
+  mat <- hmc(log_posterior, gradient, step_size, l, theta_0, m)
+  colnames(mat) <- parameter_names
+  as.data.frame(mat) %>%
+    mutate(iteration = row_number())
 }

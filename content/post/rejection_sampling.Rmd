@@ -1,0 +1,106 @@
+---
+title: "Bayesian Inference using rejection sampling"
+author: "Jonny Law"
+date: '2019-02-25'
+slug: rejection-sampling
+categories:
+  - R
+  - Bayesian
+tags: []
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyr); library(dplyr); library(readr); library(ggplot2); library(jonnylaw);
+library(ggthemes)
+theme_set(theme_tufte())
+```
+
+# Coin Flip Model
+
+As an example, consider a (possibly biased) coin flip experiment. The parameter of interest is the probability of heads $p_h$. A Beta distribution is chosen for the prior of $p_h$, $p(p_h) = \mathcal{B}(\alpha, \beta)$. The Beta distribution has support between 0 and 1, which is appropriate for a probability. The likelihood of a coin flip is Bernoulli, however the coin should be flipped several times in order to learn the parameter $p_h$. The distribution for $n$ independent Bernoulli trials is the Binomial distribution, hence the likelihood can be written as $\textrm{Bin}(Y;n,p_h)$. The coin is flipped $n = 10$ times and the results are displayed below:
+
+$$\begin{equation*}
+  \label{eq:4}
+\{H, H, T, H, H, H, T, T, H, T\}  
+\end{equation*}$$
+
+Then $Y = 6$, and it remains to determine the posterior distribution of the parameter $p_h$ representing the probability of obtaining heads. Applying Bayes theorem:
+
+$$\begin{align*}
+  p(p_h|Y) &= \frac{p(p_h)\textrm{Bin}(Y;n,p_h)}{\int_0^1 p(Y|p_h) dp_h} \\
+           &\propto p_h^{\alpha - 1}(1-p_h)^{\beta-1}{n \choose Y}p_h^Y(1-p_h)^{n-Y} \\
+           &= p_h^{Y + \alpha - 1}(1 - p_h)^{n-Y + \beta - 1}
+\end{align*}$$
+
+The posterior distribution is a Beta distribution, $\mathcal{B}(Y + \alpha, n - Y + \beta)$.
+
+```{r}
+Y <- 6
+n <- 10
+
+alpha <- 3
+beta <- 3
+
+prior <- function(x) dbeta(x, alpha, beta)
+posterior <- function(x) dbeta(x, alpha + Y, n - Y + beta)
+
+ggplot(data = data.frame(x = 0), mapping = aes(x = x)) +
+  stat_function(fun = prior, aes(colour = "Prior")) + xlim(0, 1) +
+  stat_function(fun = posterior, aes(colour = "Posterior")) +
+  xlab("p_h") +
+  ylab("Density") +
+  theme(text = element_text(size = 20), legend.title = element_blank(), legend.position = c(0.2, 0.9), legend.text = element_text(size = rel(1.3)))
+```
+
+# Rejection Sampler
+
+The rejection sampler is an algorithm which produces exact samples from the
+target distribution. Consider a problem where it is straightforward to evaluate
+the posterior density $p(\cdot)$ up to a constant. The rejection sampler
+algorithm proceeds as follows; start by sampling a value from a proposal
+distribution $\psi^\star \sim q(\cdot)$, then accept the proposed value with
+probability $p(\psi^\star)/Mq(\psi)$, where $M$ is an upper bound on $p/q$. The algorithm below shows a single step of the rejection sampler algorithm which returns a single sample from the target distribution $p(\cdot)$.
+
+1. Propose $\psi^\star \sim q(\cdot)$
+2. Continuously sample $u \sim U[0, 1]$ and check the condition in step 3.
+3. If $u < \frac{p(\psi^\star)}{Mq(\psi)}$, set $\psi^\star$ as a sample from $p$
+4. Repeat 1-3 until enough samples are attained
+
+The figure below shows the empirical posterior
+distribution found for the coin flip experiment overlaid with the analytic
+posterior distribution. This algorithm performs well for low-dimensional
+problems, but finding the upper bound $M$ can be challenging. The rejection algorithm does not work well in higher dimensions as many proposed moves are rejected. Adding extra dimensions to the problem results in the exponential increase in volume, this is known as the curse of dimensionality. More sophisticated algorithms are required for high dimensional target distributions.
+
+```{r, fig.cap="Empirical Posterior distribution for the coin flip problem using 1,000 samples from the rejection sampler with a Uniform(0, 1) proposal distribution and M = 1. The analytic posterior distribution is plotted as a solid red line."}
+# Perform one rejection step
+rejection_sample <- function(prop, propPdf, log_density) {
+  u <- runif(1)
+  y <- prop(1)
+
+  if (log(u) < log_density(y) - propPdf(y)) {
+    y
+  } else {
+    rejection_sample(prop, propPdf, log_density)
+  }
+}
+
+log_density <- function(alpha, beta, Y, n) {
+  function(theta) {
+    dbeta(theta, alpha, beta, log = T) + dbinom(Y, n, theta, log = T)
+  }
+}
+
+samples <- 1000
+lden <- log_density(alpha, beta, Y, n)
+rejection_samples <- replicate(samples, rejection_sample(runif, function(x) dunif(x, log = T), lden))
+
+qplot(rejection_samples, geom = "blank") +
+  stat_function(fun = posterior, aes(colour = "Analytic posterior")) +
+  geom_histogram(aes(y = ..density..), alpha = 0.4) +
+  theme(legend.position = "none") +
+  xlab("p_h") +
+  theme(text = element_text(size = 20))
+```
