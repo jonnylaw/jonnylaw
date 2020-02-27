@@ -1,2 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.github/workflows$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
