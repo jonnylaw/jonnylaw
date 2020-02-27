@@ -7,7 +7,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@master
       - name: Install Pandoc
-        uses: r-lib/actions/setup-pandoc@master
+        uses: r-lib/actions/setup-pandoc@v1
       - name: Install R dependencies
         run: |-
          apt-get update \
