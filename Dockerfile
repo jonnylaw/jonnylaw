@@ -1,12 +1,16 @@
 FROM rocker/r-apt:disco
 
+# 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends r-cran-rstan \
+	gdebi-core \
   libxml2-dev \
   libssl-dev \
   libcurl4-openssl-dev \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/
+  && rm -rf /var/lib/apt/lists/ \
+  && wget https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb \
+  && gdebi --non-interactive pandoc-2.7.3-1-amd64.deb
 
 # Copy contents of repo to container
 COPY . .
@@ -15,5 +19,11 @@ COPY . .
 RUN Rscript -e "install.packages('remotes', repos = 'https://demo.rstudiopm.com/all/__linux__/bionic/latest')"
 RUN Rscript -e "remotes::install_deps(dependencies = TRUE, repos = 'https://demo.rstudiopm.com/all/__linux__/bionic/latest')"
 
-# Compile Blog
-RUN Rscript -e "blogdown::build_site()"
+# Test package
+RUN Rscript  -e "testthat::test_dir(path = 'tests/testthat')"
+
+# Install package
+RUN R CMD INSTALL .
+
+# Build pkgdown website
+RUN Rscript -e "pkgdown::build()"
