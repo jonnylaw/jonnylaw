@@ -26,8 +26,9 @@ jobs:
           Rscript -e "testthat::test_dir(path = 'tests/testthat')"
       - name: Install Package
         run: |-
-          R CMD INSTALL --no-multiarch --with-keep.source jonnylaw
+          R CMD INSTALL .
       - name: Render Pkgdown Site
+      - uses: r-lib/actions/setup-pandoc@master
         run: |-
           Rscript -e "pkgdown::build()"
       - name: Deploy to GitHub Pages
