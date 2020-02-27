@@ -136,7 +136,7 @@ List kalmanFilter(
   // initialise the state
   mt.col(0) = m0;
   ct.slice(0) = c0;
-  
+
   for (int t = 0; t < n; ++t) {
     List mtct = kalmanStep(ys.col(t), f, g, v, w, mt.col(t), ct.slice(t));
     arma::colvec mt1 = mtct[0];
