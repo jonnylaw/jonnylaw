@@ -1,27 +1,34 @@
 Package: jonnylaw
 Type: Package
-Title: Private package for my blog containing Bayesian inference algorithms
+Title: Package for my blog
 Version: 0.1.0
 Author: Jonny Law
-Maintainer: Jonny Law <law.jonny@googlemail.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Maintainer: Jonny Law <jonny@jonnylaw.rocks>
+Description: All dependencies for my blog
 License: Apache
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.2
 Imports: 
-    furrr,
+    bench,
+    blogdown,
+    brms,
+    coda,
     dplyr,
-    ggplot2,
-    readr,
-    knitr,
-    Rcpp,
-    hedgehog,
-    magrittr,
+    furrr,
     ggmcmc,
+    ggplot2,
+    gridExtra,
+    hedgehog,
+    here,
+    htmltab,
     janitor,
-    htmltab
+    knitr,
+    magrittr,
+    parallel,
+    Rcpp,
+    RcppArmadillo,
+    readr
 URL: https://github.com/jonnylaw/jonnyblog
 BugReports: https://github.com/jonnylaw/jonnyblog/issues
 LinkingTo: 

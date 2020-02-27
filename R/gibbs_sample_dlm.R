@@ -152,3 +152,22 @@ dlm_gibbs_parallel <- function(ys, mod, shape_v, rate_v, shape_w, rate_w, iters,
     dlm_gibbs(ys, mod, shape_v, rate_v, shape_w, rate_w, iters)) %>%
     dplyr::bind_rows(.id = "chain")
 }
+
+#' Transform a dlm to a KFAS State Space Model
+#'
+#' @param dlm_model a model created using the dlm package
+#' @param ys a matrix containing observations
+#' @param theta a vector of parameters containing the diagonal values of v and w
+#'
+#' @return
+#' @export
+#'
+#' @examples
+dlm_to_kfas <- function(dlm_model, ys, theta) {
+  f <- dlm_model(theta)$FF
+  g <- dlm_model(theta)$GG
+  w <- dlm_model(theta)$W
+  v <- dlm_model(theta)$V
+  
+  SSModel(ys ~ SSMcustom(Z = f, T = g, Q = diag(w)), H = diag(v))
+}

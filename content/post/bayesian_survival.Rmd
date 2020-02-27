@@ -1,0 +1,195 @@
+---
+title: "Bayesian Survival Analysis: Exponential Model"
+author: "Jonny Law"
+date: "2019-08-09"
+slug: bayesian-survival-analysis
+categories: [bayesian, R]
+tags: []
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(jonnylaw)
+library(dplyr); library(readr)
+library(ggplot2)
+library(brms)
+library(tidybayes)
+library(lubridate)
+theme_set(theme_minimal())
+```
+
+# Poisson Distribution
+
+Consider an arbitrary interval where the expected number of events in the interval is denoted as $\lambda$. The number of events in this interval is Poisson distributed with rate $\lambda$. To see this, proceed to subdivide the interval into $n$ smaller intervals $t_1, \dots, t_n$ in which the probability of an event occurring in each small interval is $\lambda / n$ and can be represented as an independent Bernoulli trial. The number of events in the entire interval is distributed according to a Binomial distribution with number of trials $n$ and probability of success $\lambda / n$. If the intervals are infinitesimally small, in the limit as $n \rightarrow \infty$, then number of trials increases and the Binomial distribution tends to the Poisson distribution:
+
+$$\begin{align*}
+f(k) &= \lim_{n\rightarrow\infty} {n \choose k}\left(\frac{\lambda}{n}\right)^k\left(1-\left(\frac{\lambda}{n}\right)\right)^{n-k}, \\
+&= \lim_{n\rightarrow\infty} \frac{n!}{(n-k)!k!}\left(\frac{\lambda}{n}\right)^k\left(1-\left(\frac{\lambda}{n}\right)\right)^{n}\left(1-\left(\frac{\lambda}{n}\right)\right)^{-k}, \\
+&= \lim_{n\rightarrow\infty}\frac{n(n-1)\dots(n-k+1)(n-k)!}{(n-k)!n^k}\frac{\lambda^ke^{-\lambda}}{k!} \cdot 1, \\
+&= 1 \cdot \frac{\lambda^ke^{-\lambda}}{k!}.
+\end{align*}$$
+
+This is the probability mass function of the Poisson distribution and corresponds to the probability of observing exactly $k$ events in an interval with expected number of events $\lambda$. The Poisson probability mass function can be plotted for various values of $\lambda$:
+
+```{r poisson-distribution, echo=FALSE}
+tibble(
+  x = rep(0:20, times = 3),
+  lambda = rep(c(1, 3, 10), each = 21),
+  probability = dpois(x = x, lambda = lambda)
+) %>% 
+ggplot(aes(x = x, y = probability, colour = as.factor(lambda))) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Probability Mass Function (pmf) for three values of lambda", colour = "lambda")
+```
+
+# Exponential Survival Model
+
+The inter-arrival times of a Poisson process are distributed according to an exponential distribution with density $f(t) = \lambda e^{-\lambda t}$. The CDF of the exponential distribution is $F(t) = \int_0^\infty f(s) ds = 1 - e^{-\lambda t}.$ The cumulative distribution function (CDF) is defined as $\textrm{Pr}(T \leq t) = F(t)$, where $T$ is a random variable representing the failure time and $t$ is time period, hence the CDF defines the probability of the event occurring before time $t$. The survival function is the complement of the CDF and is defined as $S(t) = 1 - \textrm{Pr}(T \leq t) = \textrm{Pr}(T > t)$, the probability of the event happening after the elapsed time $t$ given that the event hasn't happened before $t$. The survival function for the exponential distribution is $S(t) = \exp(-\lambda t)$ and the hazard function is $h(t) = \lambda$. The hazard is defined as the probability of an event happening in a small interval $(t_0, t_0 + \delta t]$ given that the event has not yet happened:
+
+$$\begin{align*}
+h(t) &= \lim_{\delta t \rightarrow 0} \frac{\textrm{Pr}(t < T \leq t + \delta t|T > t)}{\delta t}, \\
+&= \lim_{\delta t \rightarrow 0}\frac{\textrm{Pr}(t < T \leq t + \delta t)}{\delta t S(t)}, \\
+&= \frac{f(t)}{S(t)}, \\
+&= -\frac{\textrm{d}}{\textrm{d}t}\ln(S(t)), \\
+&= -\frac{\textrm{d}}{\textrm{d}t}(-\lambda t), \\
+&= \lambda.
+\end{align*}$$
+
+Observations consist of the triple $\{y, x, \nu\}$ where $y \in \mathbb{R}^n$ is a vector of followup times, $x \in \mathbb{R}^{n\times p}$ is a matrix of covariates where the $i^{th}$ row is associated with the $i^{th}$ entry of the followup time vector $y$, finally $\nu$ is a $n$ dimensional vector where each entry is 1 if the event is a death and 0 if the event is censored at the followup time.
+
+To determine the rate parameter of the exponential survival, $\lambda$ and learn about the survival function then we first need to specify the likelihood. The likelihood for a parametric survival model can be written as:
+
+$$p(y|x, \theta) = \prod_{i=1}^n f(y_i|x, \theta)^{\nu_i}S(y_i|x, \theta)^{1-\nu_i}.$$
+
+This means for a censored individual, when $\nu = 0$, then only the survival function has a contribution to the likelihood since the event happens sometime after the followup time $y$. For the exponential model the likelihood can be written as:
+
+$$p(y|x, \theta) = \prod_{i=1}^n  (\lambda e^{-\lambda y_i})^{\nu_i}(e^{-\lambda y_i})^{1-\nu_i}$$
+
+For the following derivation assume that the model has no covariates and hence $\lambda$ is a parameter of interest. If the prior for the hazard is $\lambda \sim \textrm{Gamma}(\alpha, \beta)$ then the posterior for lambda is:
+
+$$\begin{align}
+p(\lambda|y, x) &= \frac{\beta^\alpha}{\Gamma(\alpha)}\lambda^{\alpha-1}e^{-\beta \lambda}\prod_{i=1}^n  (\lambda e^{-\lambda y_i})^{\nu_i}(e^{-\lambda y_i})^{1-\nu_i}, \\
+&\propto \lambda^{(\alpha-1+\sum_{i=1}^n\nu_i)}e^{-\lambda(\beta + \sum_{i=1}^ny_i)}.
+\end{align}$$
+
+This can be recognised as a Gamma distribution with shape $\alpha-\sum_{i=1}^n\nu_i$ and scale $\beta + \sum_{i=1}^ny_i$.
+
+To test this method, we will use the ovarian cancer data from the `survival` package. The ovarian cancer data contains the followup time, `futime` and censoring, `fustat`.
+
+```{r, echo=FALSE}
+library(survival)
+data("ovarian")
+
+ovarian %>% 
+  select(futime, fustat) %>% 
+  as_tibble()
+```
+
+The posterior distribution of the hazard for the ovarian cancer data is plotted below, where the parameters of the Gamma prior distribution are $\alpha = 3$, $\beta = 2$.
+
+```{r echo=FALSE}
+alpha <- 3.0
+beta <- 2.0
+
+posterior_shape <- alpha + sum(ovarian$fustat)
+posterior_rate <- beta + sum(ovarian$futime)
+mean <- posterior_shape / posterior_rate
+ci <- qgamma(p = c(0.025, 0.975), shape = posterior_shape, rate = posterior_rate)
+
+ggplot(data = data.frame(x = c(0, 0.01)), aes(x)) +
+  stat_function(fun = ~dgamma(., shape = posterior_shape, rate = posterior_rate)) +
+  labs(title = "Posterior distribution of the hazard")
+```
+
+The posterior predictive distribution can be calculated as:
+
+$$f(t|y) = \int f(t|\theta)p(\theta|y) d\theta$$
+
+And the predictive survival:
+
+$$S(t|y) = \int S(t|\theta)p(\theta|y) d\theta$$
+Now the survival curve can be plotted by simulating the rate, $\lambda$ from the posterior distribution and calculating the survival $e^{-\lambda t}$ for discrete values of $t$.
+
+```{r, echo=FALSE}
+exponential_survival <- function(lambda, time) 
+  exp(-lambda * time)
+
+m <- 500
+
+analytic <- tibble(
+  time = rep(x = seq(from = 0, to = 1250, length.out = 100), each = m),
+  draw = rep(seq_len(m), times = 100),
+  lambda = rep(replicate(n = m, expr = rgamma(n = 1, shape = posterior_shape, rate = posterior_rate)), times = 100),
+  survival = exponential_survival(lambda, time)
+  ) %>% 
+    group_by(time) %>% 
+  mutate(median = median(survival), 
+         upper = quantile(survival, probs = 0.975),
+         lower = quantile(survival, probs = 0.025)) %>% 
+    ggplot(aes(x = time, y = survival)) +
+    geom_line(aes(x = time, y = survival, group = draw), size = 0.1, alpha = 0.1) +
+    geom_line(aes(x = time, y = median)) +
+    geom_line(aes(x = time, y = upper), linetype = "dotted", size = 0.5) +
+    geom_line(aes(x = time, y = lower), linetype = "dotted", size = 0.5) +
+    ylim(0, 1) +
+    xlim(0, 1250)
+
+analytic
+```
+
+## Fitting the exponential model using BRMS
+
+In general, parametric survival models can be fitted using sampling based methods such as MCMC. The package [brms](https://github.com/paul-buerkner/brms) can be used as a straightforward interface to [stan](https://mc-stan.org).
+
+To express this model using `brms`, we model the followup time directly while considering censoring. The event is considered right-censored if a death has not occurred, where `fustat = 1` and the formula to specify the followup time is right censored is `futime | cens(fustat)`. This is followed by distributed by `~` and the covariates of interest. To compare it to the analytic result above we consider the model with only an intercept and no covariates. Note that this model is not exactly the same since the prior is on specified on the log of the rate, $\lambda$.
+
+```{r}
+fit_exponential <-
+  brm(
+    futime | cens(fustat) ~ 1,
+    data = ovarian,
+    family = brmsfamily("exponential"),
+    cores = 4,
+    prior = prior("normal(0.0, 3.0)", "Intercept")
+  )
+```
+
+```{r}
+summary(fit_exponential)
+```
+
+The figure on the left below compares the analytic survival function for the exponential model on the left, to the sampling based survival function using 100 draws from the posterior distribution. In addition, the thick black line on the right-hand plot represents the median survival calculated from 4,000 draws from the posterior distribution
+
+```{r exponential_survival_curve, echo=FALSE}
+times <- 1:max(ovarian$futime)
+
+draws <- fit_exponential %>% 
+  tidy_draws() %>% 
+  mutate(lambda = exp(-b_Intercept))
+
+last_time <- max(times)
+
+survival_exponential <- tibble(time = rep(1:last_time, times = nrow(draws)),
+       draw = rep(draws$.draw, times = last_time),
+       lambda = rep(draws$lambda, times = last_time)) %>% 
+  mutate(survival = exp(-lambda * time)) %>% 
+  group_by(time) %>% 
+  mutate(median = median(survival), 
+         upper = quantile(survival, probs = 0.975),
+         lower = quantile(survival, probs = 0.025))
+
+sampling <- survival_exponential %>% 
+  filter(draw < 100) %>% 
+  ggplot() +
+  geom_line(aes(x = time, y = survival, group = draw), size = 0.1, alpha = 0.1) +
+  geom_line(aes(x = time, y = median)) +
+  geom_line(aes(x = time, y = upper), linetype = "dotted", size = 0.5) +
+  geom_line(aes(x = time, y = lower), linetype = "dotted", size = 0.5) +
+  ylim(0, 1) +
+  xlim(0, 1250) +
+  theme(legend.position = "none")
+
+gridExtra::grid.arrange(analytic, sampling, ncol = 2)
+```
+
