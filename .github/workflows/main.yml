@@ -11,7 +11,7 @@ jobs:
           apt-get install -y gdebi-core \
            && wget https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb \
            && gdebi --non-interactive pandoc-2.7.3-1-amd64.deb
-        - name: Install R dependencies
+      - name: Install R dependencies
         run: |-
          apt-get update \
           && apt-get install -y --no-install-recommends \
