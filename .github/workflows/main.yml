@@ -31,6 +31,7 @@ jobs:
           R CMD INSTALL .
       - name: Render Pkgdown Site
         run: |-
+          Rscript -e "install.packages('pkgdown')"
           Rscript -e "pkgdown::build()"
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
