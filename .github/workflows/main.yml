@@ -1,4 +1,4 @@
-name: Render and Deploy RMarkdown Website
+name: Test and install package and render pkgdown website
 'on': push
 jobs:
   build:
@@ -23,7 +23,7 @@ jobs:
           Rscript -e "remotes::install_deps(dependencies = TRUE, repos = 'https://demo.rstudiopm.com/all/__linux__/bionic/latest')"
       - name: Test Package
         run: |-
-          Rscript -e "testthat::test_dir(path = "tests/testthat")"
+          Rscript -e "testthat::test_dir(path = 'tests/testthat')"
       - name: Install Package
         run: |-
           R CMD INSTALL --no-multiarch --with-keep.source jonnylaw
