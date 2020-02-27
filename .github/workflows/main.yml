@@ -28,7 +28,7 @@ jobs:
         run: |-
           R CMD INSTALL .
       - name: Render Pkgdown Site
-      - uses: r-lib/actions/setup-pandoc@master
+        uses: r-lib/actions/setup-pandoc@master
         run: |-
           Rscript -e "pkgdown::build()"
       - name: Deploy to GitHub Pages
