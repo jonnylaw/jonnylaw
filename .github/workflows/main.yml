@@ -7,8 +7,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@master
       - name: Install Pandoc
-        uses: r-lib/actions/setup-pandoc@v1
-      - name: Install R dependencies
+        run: |-
+          apt-get install -y gdebi-core \
+           && wget https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb \
+           && gdebi --non-interactive pandoc-2.7.3-1-amd64.deb
+        - name: Install R dependencies
         run: |-
          apt-get update \
           && apt-get install -y --no-install-recommends \
@@ -18,7 +21,6 @@ jobs:
           libcurl4-openssl-dev \
           && apt-get clean \
           && rm -rf /var/lib/apt/lists/
-
       - name: Install Package Dependencies
         run: |-
           Rscript -e "install.packages('remotes', repos = 'https://demo.rstudiopm.com/all/__linux__/bionic/latest')"
