@@ -1,4 +1,4 @@
-Package: jonnyblog
+Package: jonnylaw
 Type: Package
 Title: Private package for my blog containing Bayesian inference algorithms
 Version: 0.1.0
@@ -6,15 +6,26 @@ Author: Jonny Law
 Maintainer: Jonny Law <law.jonny@googlemail.com>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: Apache
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Imports: 
     furrr,
     dplyr,
     ggplot2,
     readr,
-    knitr
+    knitr,
+    Rcpp,
+    hedgehog,
+    magrittr,
+    ggmcmc,
+    janitor,
+    htmltab
 URL: https://github.com/jonnylaw/jonnyblog
 BugReports: https://github.com/jonnylaw/jonnyblog/issues
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo
+Suggests: 
+    testthat

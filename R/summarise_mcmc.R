@@ -25,7 +25,7 @@ traceplot = function(chains) {
   chains %>%
     ggplot2::ggplot() +
     ggplot2::geom_line(ggplot2::aes(x = iteration, y = value, colour = as.factor(chain)), alpha = 0.5) +
-    ggplot2::facet_wrap(~parameter, scales = "free_y", strip.position = "right") +
+    ggplot2::facet_wrap(~Parameter, scales = "free_y", strip.position = "right") +
     ggplot2::theme(legend.position = "none")
 }
 
@@ -58,8 +58,9 @@ plot_diagnostics = function(chains) {
 
   p2 = chains %>%
     filter(chain == 1) %>%
-    ggs_autocorrelation() +
+    ggmcmc::ggs_autocorrelation() +
     facet_wrap(~Parameter, ncol = 3) +
+    ylim(0, 1) +
     theme(legend.position = "none")
 
   p3 = density_plot(chains)

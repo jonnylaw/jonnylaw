@@ -9,6 +9,9 @@ metropolis_step(theta, log_posterior, proposal)
 \arguments{
 \item{proposal}{}
 }
+\value{
+
+}
 \description{
 This implements a single step of the Metropolis Algorithm
 }

@@ -4,11 +4,13 @@
 \alias{metropolis}
 \title{Metropolis Algorithm}
 \usage{
-metropolis(theta, log_posterior, proposal, m, chains = 4,
-  parallel = FALSE)
+metropolis(theta, log_posterior, proposal, m, chains = 1, parallel = FALSE)
 }
 \arguments{
 \item{parallel}{}
+}
+\value{
+
 }
 \description{
 Metropolis Algorithm
