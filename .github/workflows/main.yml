@@ -6,6 +6,17 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@master
+      - name: Install R dependencies
+        run: |-
+         apt-get update \
+          && apt-get install -y --no-install-recommends \
+          curl \
+          libxml2-dev \
+          libssl-dev \
+          libcurl4-openssl-dev \
+          && apt-get clean \
+          && rm -rf /var/lib/apt/lists/
+
       - name: Install Package Dependencies
         run: |-
           Rscript -e "install.packages('remotes', repos = 'https://demo.rstudiopm.com/all/__linux__/bionic/latest')"
