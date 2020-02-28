@@ -17,7 +17,7 @@ jobs:
           libcurl4-openssl-dev \
           && apt-get clean \
           && rm -rf /var/lib/apt/lists/ \
-          && wget https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb \
+          && curl -o pandoc-2.7.3-1-amd64.deb https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-1-amd64.deb \
           && gdebi --non-interactive pandoc-2.7.3-1-amd64.deb
       - name: Install Package Dependencies
         run: |-
