@@ -30,7 +30,7 @@ jobs:
       - name: Render Pkgdown Site
         run: |-
           Rscript -e "install.packages('pkgdown')"
-          Rscript -e "pkgdown::build()"
+          Rscript -e "pkgdown::build_site()"
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
         uses: maxheld83/ghpages@v0.2.0
