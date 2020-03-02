@@ -269,37 +269,76 @@ dlm_to_kfas <- function(dlm_model, ys, theta) {
   SSModel(ys ~ SSMcustom(Z = f, T = g, Q = diag(w)), H = diag(v))
 }
 
-#' Title
+#' Calculate one-step forecast mean and variance for each observation
 #'
-#' @param filtered 
+#' @param filtered output from dlm_kalman_filter
+#'
+#' @return
+#' @export
+#'
+#' @examples
+dlm_summarise_filtered <- function(filtered) {
+  p <- nrow(filtered$ys)
+  
+  f <- filtered$f
+  ft <- f %*% filtered$at
+  v <- filtered$V
+  qt <- plyr::alply(filtered$rt, 3, function(r) f %*% r %*% t(f) + v)
+  
+  upper <-
+    map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
+      p = 0.95,
+      mean = .x,
+      sd = sqrt(diag(.y))
+    )) %>% reduce(rbind)
+  lower <-
+    map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
+      p = 0.05,
+      mean = .x,
+      sd = sqrt(diag(.y))
+    )) %>% reduce(rbind)
+  
+  fitted_values <- cbind(t(ft), lower, upper, t(ys)) %>% 
+    tibble::as_tibble() %>% 
+    mutate(time = row_number())
+  names(fitted_values) <- c(paste0(rep(c("pred", "lower", "upper", "observation"), each = p), seq_len(p)), "time")
+  
+  fitted_values %>%
+    dplyr::select(time, dplyr::contains("pred")) %>%
+    tidyr::pivot_longer(-time, values_to = "fitted", names_prefix = "pred") %>%
+    dplyr::inner_join(
+      fitted_values %>% dplyr::select(time, dplyr::contains("upper")) %>%
+        tidyr::pivot_longer(-time, values_to = "upper", names_prefix = "upper"),
+      by = c("time", "name")
+    ) %>%
+    dplyr::inner_join(
+      fitted_values %>% dplyr::select(time, dplyr::contains("lower")) %>%
+        tidyr::pivot_longer(-time, values_to = "lower", names_prefix = "lower"),
+      by = c("time", "name")
+    ) %>% 
+    dplyr::inner_join(
+      fitted_values %>% dplyr::select(time, dplyr::contains("observation")) %>%
+        tidyr::pivot_longer(-time, values_to = "observation", names_prefix = "observation"),
+      by = c("time", "name")
+    )
+}
+
+#' Plot the one-step forecast
+#' 
+#' Generic S3 method to plot the one-step forecast mean f_t = F_t a_t and variance
+#' Q_t = F_t r_t F_t^T + V_t against the observed values
+#'
+#' @param filtered output of dlm_kalman_filter of class "filtered"
 #'
 #' @return
 #' @export
 #'
 #' @examples
 plot.filtered <- function(filtered) {
-  d <- nrow(filtered$mt)
-  filtered_state <-
-    filtered$mt[,-1] %>% t() %>% 
-    as_tibble() 
-  names(filtered_state) <- paste0(rep("state", time = d), seq_len(d))
-  
-  filtered_state <- filtered_state %>% 
-    mutate(time = row_number()) %>% 
-    pivot_longer(-time, names_to = "variable", values_to = "filtered")
-  
-  state_df <- state %>% 
-    tibble::as_tibble()
-  names(state_df) <- paste0(rep("state", time = d), seq_len(d))
-  
-  state_df <- state_df %>% 
-    mutate(time = row_number()) %>% 
-    pivot_longer(-time, names_to = "variable", values_to = "state")
-  
-  filtered_state %>% 
-    inner_join(state_df, by = c("time", "variable")) %>% 
-    pivot_longer(c(state, filtered), names_to = "state", values_to = "value") %>% 
-    ggplot() +
-    geom_line(aes(x = time, y = value, colour = state)) +
-    facet_wrap(~variable, ncol = 1)
+  dlm_summarise_filtered(filtered) %>% 
+    ggplot2::ggplot(ggplot2::aes(x = time)) +
+    ggplot2::geom_line(ggplot2::aes(y = fitted)) +
+    ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper), alpha = 0.3) +
+    ggplot2::geom_line(ggplot2::aes(y = observation), colour = "red") +
+    ggplot2::facet_wrap(~name, ncol = 1)
 }

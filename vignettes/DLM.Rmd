@@ -58,22 +58,8 @@ filtered <-
   dlm_kalman_filter(t(obs), model$FF, model$GG, model$V, model$W, model$m0, model$C0)
 ```
 
-
-
-```{r plot-filterd, eval=FALSE, echo=FALSE}
-# TODO: Plot the filtered states and 50% intervals.
-# Write this as a plot method on the "filtered" S3 class.
-
-d <- ncol(model$FF)
-filtered_state <-
-  filtered$mt[,-1] %>% t() %>% 
-  as_tibble() 
-names(filtered_state) <- paste0(rep("state", time = d), seq_len(d))
-
-f <- model$FF
-ft <- f %*% filtered$at
-v <- model$V
-qt <- plyr::aaply(filtered$rt, 3, function(r) f %*% r %*% t(f) + v)
+```{r plot-filtered}
+plot(filtered)
 ```
 
 Plot the simulated state and the filtered mean.

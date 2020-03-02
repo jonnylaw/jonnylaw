@@ -152,7 +152,12 @@ List dlm_kalman_filter(
   List L = List::create(Rcpp::Named("mt")=mt, 
                         Rcpp::Named("ct")=ct, 
                         Rcpp::Named("at")=at, 
-                        Rcpp::Named("rt")=rt);
+                        Rcpp::Named("rt")=rt,
+                        Rcpp::Named("ys")=ys,
+                        Rcpp::Named("f")=f,
+                        Rcpp::Named("g")=g,
+                        Rcpp::Named("V")=v,
+                        Rcpp::Named("W")=w);
   
   L.attr("class") = "filtered";
   
