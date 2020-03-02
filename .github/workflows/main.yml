@@ -26,7 +26,6 @@ jobs:
           Rscript -e "testthat::test_dir(path = 'tests/testthat')"
       - name: Install Package
         run: |-
-          Rscript -e "install.packages('devtools'); devtools::document()" 
           R CMD INSTALL .
       - name: Render Pkgdown Site
         run: |-
