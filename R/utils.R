@@ -7,7 +7,5 @@
 #'
 #' @examples
 rename_clean <- function(name) {
-  tolower(
-    stringr::str_replace_all(string = name, pattern = "\\s+|/|-|>", replacement = "_")
-  )
+  janitor::make_clean_names(string = name)
 }

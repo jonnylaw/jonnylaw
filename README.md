@@ -1,5 +1,19 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # Blog
 
-This is where I keep the code required to build my blog and any additional code described in those posts. See the latest posts at https://jonnylaw.netlify.com.
+This is where I keep the code associated with my blog, you can see the
+latest posts at [jonnylaw.rocks](https://jonnylaw.rocks).
 
-This blog is built using [blogdown](https://bookdown.org/yihui/blogdown/) in R and deployed on [Netlify](https://netlify.com).
+This is a documentation wesite at <https://jonnylaw.github.io/jonnylaw>.
+
+## Package Installation
+
+You can install the development version of this package from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("jonnylaw/jonnylaw")
+```

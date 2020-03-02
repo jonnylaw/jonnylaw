@@ -23,7 +23,7 @@ RUN Rscript -e "remotes::install_deps(dependencies = TRUE, repos = 'https://demo
 RUN Rscript  -e "testthat::test_dir(path = 'tests/testthat')"
 
 # Install package
-RUN Rscript -r "pkgbuild::build(path = '.', dest_path = '.'); install.packages(pkgs = 'jonnylaw_0.1.0.tar.gz', repos = NULL, type = 'source')"
+RUN Rscript -e "pkgbuild::build(path = '.', dest_path = '.'); install.packages(pkgs = 'jonnylaw_0.1.0.tar.gz', repos = NULL, type = 'source')"
 
 # Build pkgdown website
 RUN Rscript -e "pkgdown::build()"

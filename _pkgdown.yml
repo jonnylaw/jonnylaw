@@ -1,1 +1,6 @@
-destination: docs
+reference:
+  - title: "Bayesian Inference for DLMS"
+    desc: >
+      Functions for filtering, backward sampling and Gibbs sampling for dynamic linear models.
+    contents: 
+      - starts_with("dlm")

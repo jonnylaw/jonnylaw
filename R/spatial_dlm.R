@@ -1,6 +1,6 @@
 #' Title
 #'
-#' @param A 
+#' @param A
 #'
 #' @return
 #' @export
@@ -12,8 +12,8 @@ diag_inverse <- function(A) {
 
 #' Title
 #'
-#' @param mu 
-#' @param prec 
+#' @param mu
+#' @param prec
 #'
 #' @return
 #' @export
@@ -46,26 +46,26 @@ sample_beta <- function(ys, xs, theta, mod, beta_mu, beta_sigma) {
   y_center <- center_y(ys, theta, mod) %>% t()
   beta_Sigma <- beta_sigma * diag(m) # create a matrix
   beta_Mu <- rep(beta_mu, m) # Create a vector
-  
+
   posterior_precision <- beta_Sigma + n * xs %*% diag_inverse(mod$V) %*% t(xs)
   posterior_mean <- solve(posterior_precision, beta_Sigma %*% beta_Mu + n * xs %*% diag_inverse(mod$V) %*% rowMeans(y_center))
-  
+
   mvrnorm_prec(posterior_mean, posterior_precision)
 }
 
 #' Title
 #'
-#' @param ys 
-#' @param xs 
-#' @param mod 
-#' @param shape_v 
-#' @param rate_v 
-#' @param shape_w 
-#' @param rate_w 
-#' @param beta_mu 
-#' @param beta_sigma 
-#' @param iters 
-#' @param progress 
+#' @param ys
+#' @param xs
+#' @param mod
+#' @param shape_v
+#' @param rate_v
+#' @param shape_w
+#' @param rate_w
+#' @param beta_mu
+#' @param beta_sigma
+#' @param iters
+#' @param progress
 #'
 #' @return
 #' @export
@@ -81,14 +81,15 @@ spatial_dlm <- function(ys, xs, mod, shape_v, rate_v, shape_w, rate_w, beta_mu, 
   beta[1, ] <- rnorm(m, beta_mu, beta_sigma)
   v[1, ] <- 1 / rgamma(p, shape = shape_v, rate = rate_v)
   w[1, ] <- 1 / rgamma(d, shape = shape_w, rate = rate_w)
-  theta <- c(w[1,], v[1,])
+  theta <- c(w[1, ], v[1, ])
   if (progress) {
     pb <- progress::progress_bar$new(
       format = "sampling [:bar] :current / :total eta: :eta",
-      total = iters, clear = FALSE, width= 60)  
+      total = iters, clear = FALSE, width = 60
+    )
   }
   for (i in seq_len(iters)[-1]) {
-    ys_beta <- apply(ys, 2, function(y) y - t(xs) %*% beta[i-1, ]) # take beta away
+    ys_beta <- apply(ys, 2, function(y) y - t(xs) %*% beta[i - 1, ]) # take beta away
     sampled <- ffbs(ys_beta, model) # Perform ffbs to sample theta
     w[i, ] <- sample_w(sampled, mod, shape_w, rate_w)
     mod$W <- diag(w[i, ])
@@ -103,25 +104,26 @@ spatial_dlm <- function(ys, xs, mod, shape_v, rate_v, shape_w, rate_w, beta_mu, 
 }
 
 #' Gibbs sample spatial DLM in parallel
-#' 
-#' Run 4 chains in parallel for DLM with diagonal state and processes noise 
+#'
+#' Run 4 chains in parallel for DLM with diagonal state and processes noise
 #' covariance matrices
 #'
-#' @param ys 
-#' @param mod 
-#' @param shape_v 
-#' @param rate_v 
-#' @param shape_w 
-#' @param rate_w 
-#' @param iters 
-#' @param chains 
+#' @param ys
+#' @param mod
+#' @param shape_v
+#' @param rate_v
+#' @param shape_w
+#' @param rate_w
+#' @param iters
+#' @param chains
 #'
 #' @return
 #' @export
 #'
 #' @examples
 spatial_dlm_parallel <- function(ys, xs, mod, shape_v, rate_v, shape_w, rate_w, beta_mu, beta_sigma, iters = 1e4, chains = 4) {
-  parallel::mclapply(seq_len(chains), function(x)
-    spatial_dlm(ys, xs, mod, shape_v, rate_v, shape_w, rate_w, beta_mu, beta_sigma, iters, progress = FALSE)) %>% 
+  parallel::mclapply(seq_len(chains), function(x) {
+    spatial_dlm(ys, xs, mod, shape_v, rate_v, shape_w, rate_w, beta_mu, beta_sigma, iters, progress = FALSE)
+  }) %>%
     dplyr::bind_rows(.id = "chain")
 }

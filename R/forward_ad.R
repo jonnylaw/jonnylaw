@@ -8,8 +8,9 @@
 #'
 #' @examples
 dual <- function(real, eps) {
-  if (!is.numeric(real))
+  if (!is.numeric(real)) {
     stop("real must be numeric")
+  }
   structure(list(real = real, eps = eps), class = "dual")
 }
 
@@ -22,8 +23,9 @@ dual <- function(real, eps) {
 #'
 #' @examples
 var <- function(x) {
-  if (!is.numeric(x))
+  if (!is.numeric(x)) {
     stop("x must be numeric")
+  }
   dual(x, 1)
 }
 
@@ -36,25 +38,32 @@ var <- function(x) {
 #'
 #' @examples
 const <- function(x) {
-  if (!is.numeric(x))
+  if (!is.numeric(x)) {
     stop("x must be numeric")
+  }
   dual(x, 0)
 }
 
-plus <- function(x, y)
+plus <- function(x, y) {
   dual(x$real + y$real, x$eps + y$eps)
+}
 
-minus <- function(x, y)
+minus <- function(x, y) {
   dual(x$real - y$real, x$eps - y$eps)
+}
 
 
-times <- function(x, y)
+times <- function(x, y) {
   dual(x$real * y$real, x$eps * y$real + y$eps * x$real)
+}
 
 
-divide <- function(x, y)
-  dual(x$real / y$real,
-       (x$eps * y$real - x$real * y$eps) / (y$real * y$real))
+divide <- function(x, y) {
+  dual(
+    x$real / y$real,
+    (x$eps * y$real - x$real * y$eps) / (y$real * y$real)
+  )
+}
 
 #' Lift a function to operate on bare numbers
 #'
@@ -66,7 +75,7 @@ divide <- function(x, y)
 #'
 #' @examples
 lift_function <- function(f) {
-  function(x, y)
+  function(x, y) {
     if (is.double(x)) {
       f(const(x), y)
     } else if (is.double(y)) {
@@ -74,6 +83,7 @@ lift_function <- function(f) {
     } else {
       f(x, y)
     }
+  }
 }
 
 #' Operators for Univariate Dual Numbers

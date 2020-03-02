@@ -35,10 +35,10 @@ metropolis_step <- function(theta, log_posterior, proposal) {
 #'
 #' @examples
 metropolis_helper <- function(theta, log_posterior, proposal, m) {
-  out = matrix(NA_real_, nrow = m, ncol = length(theta))
-  out[1, ] = theta
+  out <- matrix(NA_real_, nrow = m, ncol = length(theta))
+  out[1, ] <- theta
   for (i in 2:m) {
-    out[i, ] <- metropolis_step(out[i-1, ], log_posterior, proposal)
+    out[i, ] <- metropolis_step(out[i - 1, ], log_posterior, proposal)
   }
   colnames(out) <- names(theta)
   tibble::as_tibble(out)
@@ -69,6 +69,7 @@ metropolis <- function(theta, log_posterior, proposal, m, chains = 1, parallel =
     purrr::map_dfr(
       .x = 1:chains,
       .f = function(x) metropolis_helper(theta, log_posterior, proposal, m),
-      .id = "chain")
+      .id = "chain"
+    )
   }
 }

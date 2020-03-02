@@ -1,0 +1,29 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# Blog
+
+This is where I keep the code associated with my blog, you can see the latest posts at [jonnylaw.rocks](https://jonnylaw.rocks).
+
+This is a documentation wesite at https://jonnylaw.github.io/jonnylaw.
+
+## Package Installation
+
+You can install the development version of this package from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("jonnylaw/jonnylaw")
+```

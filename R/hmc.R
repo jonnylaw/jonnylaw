@@ -14,7 +14,7 @@ leapfrog_step <- function(gradient, step_size, position, momentum, d) {
   position1 <- position + step_size * momentum1
   momentum2 <- momentum1 + gradient(position1) * 0.5 * step_size
 
-  matrix(c(position1, momentum2), ncol = d*2)
+  matrix(c(position1, momentum2), ncol = d * 2)
 }
 
 #' Perform l Leapfrog steps
@@ -103,7 +103,7 @@ hmc <- function(log_posterior, gradient, step_size, l, theta_0, m) {
   out <- matrix(NA_real_, nrow = m, ncol = d)
   out[1, ] <- theta_0
   for (i in 2:m) {
-    out[i, ] <- hmc_step(log_posterior, gradient, step_size, l, out[i-1,], d)
+    out[i, ] <- hmc_step(log_posterior, gradient, step_size, l, out[i - 1, ], d)
   }
   out
 }

@@ -57,7 +57,7 @@ concat <- function(strings) {
 #'
 #' @examples
 get_division_results <- function(raw_results, counters = 4) {
-  incomplete_teams = raw_results %>%
+  incomplete_teams <- raw_results %>%
     count(club) %>%
     filter(n < counters)
 
