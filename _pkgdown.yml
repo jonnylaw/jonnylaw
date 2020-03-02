@@ -13,6 +13,29 @@ reference:
     desc: >
       An R implementation of Metropolis Hastings
     contents:
+      - metropolis
+      - metropolis_step
   - title: "Bayesian Posterior Analysis"
     desc: >
-      
+      Functions for summarising the output of MCMC algorithms
+    contents:
+      - thin
+      - traceplot
+      - density_plot
+      - plot_diagnostics
+      - summary_table
+      - latex_summary_table
+      - plot_pdf
+      - latex_table_sim
+      - plot_diagnostics_sim
+  - title: "Forward Mode Automatic Differentiation"
+    desc: >
+      A simple implementation of forward mode automatic differentiation
+    contents:
+      - dual
+      - variable
+  - title: "Parsing the North East Harrier League website"
+    desc: >
+      Functions to download results from the North East Harrier League
+    contents:
+      - get_division_results

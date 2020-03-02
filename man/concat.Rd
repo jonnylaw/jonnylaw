@@ -2,16 +2,16 @@
 % Please edit documentation in R/harrier_league.R
 \name{concat}
 \alias{concat}
-\title{Title}
+\title{Concatenate strings together with a comma-separated list}
 \usage{
 concat(strings)
 }
 \arguments{
-\item{strings}{}
+\item{strings}{a list of strings}
 }
 \value{
 
 }
 \description{
-Title
+Concatenate strings together with a comma-separated list
 }

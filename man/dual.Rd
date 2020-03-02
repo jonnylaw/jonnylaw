@@ -2,7 +2,7 @@
 % Please edit documentation in R/forward_ad.R
 \name{dual}
 \alias{dual}
-\title{Title}
+\title{Representation of a Dual Number}
 \usage{
 dual(real, eps)
 }
@@ -13,5 +13,5 @@ dual(real, eps)
 
 }
 \description{
-Title
+Representation of a Dual Number
 }

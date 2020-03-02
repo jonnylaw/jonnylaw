@@ -80,7 +80,7 @@ arma::mat dlm_backward_sample(
   int p = mt0.n_rows;
   
   arma::mat theta(p, n + 1, arma::fill::none);
-  theta.col(n) = mvrnorm(mts.col(n), cts.slice(n));
+  theta.col(n) = mvrnormsvd(mts.col(n), cts.slice(n));
 
   for (int t = n - 1; t >= 0; --t) {
     arma::colvec mt = mts.col(t);

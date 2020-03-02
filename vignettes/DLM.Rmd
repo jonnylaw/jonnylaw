@@ -10,6 +10,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
   comment = "#>"
 )
 ```
@@ -27,19 +29,19 @@ theme_set(theme_minimal())
 
 Using the `dlm` R package, simulate a random DLM with observation dimension `m = 3` and latent state dimension `p = 3` with `nobs = 100`.
 
-```{r}
+```{r generate-model}
 model_state <- dlmRandom(m = 3, p = 3, nobs = 100)
 ```
 
 This method returns a list containing the model, latent state and observations which can be plotted using ggplot2.
 
-```{r}
+```{r split-model-components}
 model <- model_state$mod
 state <- model_state$theta
 obs <- model_state$y
 ```
 
-```{r}
+```{r plot-observations}
 obs %>% 
   tibble::as_tibble() %>% 
   mutate(time = row_number()) %>% 
@@ -51,14 +53,14 @@ obs %>%
 
 Then the C++ implementation of the Kalman Filter can be carried out using the Random DLM.
 
-```{r}
+```{r kalman-filter}
 filtered <-
   dlm_kalman_filter(t(obs), model$FF, model$GG, model$V, model$W, model$m0, model$C0)
 ```
 
 
 
-```{r echo=FALSE}
+```{r plot-filterd, eval=FALSE, echo=FALSE}
 # TODO: Plot the filtered states and 50% intervals.
 # Write this as a plot method on the "filtered" S3 class.
 
@@ -76,7 +78,7 @@ qt <- plyr::aaply(filtered$rt, 3, function(r) f %*% r %*% t(f) + v)
 
 Plot the simulated state and the filtered mean.
 
-```{r echo=FALSE}
+```{r plot-filtered-sim, echo=FALSE}
 d <- ncol(model$FF)
 filtered_state <-
   filtered$mt[,-1] %>% t() %>% 
@@ -107,7 +109,7 @@ filtered_state %>%
 
 Sampling full rank observation and system noise matrices using the inverse Wishart distribution.
 
-```{r cache=TRUE}
+```{r gibbs-sampling, cache=TRUE, eval=FALSE}
 chains <-
   dlm_gibbs_wishart(
     ys = t(obs),
@@ -121,23 +123,23 @@ chains <-
   )
 ```
 
-```{r echo=FALSE}
+```{r plot-observation-diagnostics, echo=FALSE, eval=FALSE}
 actual_values <- tibble(
-  parameter = c(paste0("w", 1:9), paste0("v", 1:9)),
+  parameter = c(paste0("w", seq_len(length(model$W))), paste0("v", seq_len(length(model$V)))),
   actual_value = c(model$W, model$V))
 
 chains %>% 
+  thin(4) %>% 
   filter(iteration > 1e3) %>% 
-  select(1:9, iteration) %>% 
+  select(contains("v"), iteration) %>% 
   pivot_longer(-iteration, names_to = "parameter", values_to = "value") %>% 
-  plot_diagnostics_sim(actual_values) +
-  labs(title = "Posterior distribution of Observation Noise Matrix")
+  plot_diagnostics_sim(actual_values)
 ```
 
-```{r echo=FALSE}
+```{r plot-system-diagnostics, echo=FALSE, eval=FALSE}
 chains %>% 
   filter(iteration > 1e3) %>% 
-  select(10:18, iteration) %>% 
+  select(contains("w"), iteration) %>% 
   pivot_longer(-iteration, names_to = "parameter", values_to = "value") %>% 
   plot_diagnostics_sim(actual_values)
 ```

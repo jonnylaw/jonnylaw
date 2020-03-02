@@ -269,8 +269,14 @@ dlm_to_kfas <- function(dlm_model, ys, theta) {
   SSModel(ys ~ SSMcustom(Z = f, T = g, Q = diag(w)), H = diag(v))
 }
 
-
-
+#' Title
+#'
+#' @param filtered 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plot.filtered <- function(filtered) {
   d <- nrow(filtered$mt)
   filtered_state <-

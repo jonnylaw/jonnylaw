@@ -1,4 +1,4 @@
-#' Title
+#' Representation of a Dual Number
 #'
 #' @param real
 #' @param eps
@@ -14,7 +14,7 @@ dual <- function(real, eps) {
   structure(list(real = real, eps = eps), class = "dual")
 }
 
-#' Title
+#' Build a variable
 #'
 #' @param x
 #'
@@ -22,7 +22,7 @@ dual <- function(real, eps) {
 #' @export
 #'
 #' @examples
-var <- function(x) {
+variable <- function(x) {
   if (!is.numeric(x)) {
     stop("x must be numeric")
   }

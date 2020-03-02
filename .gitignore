@@ -5,4 +5,6 @@ blogdown/.
 .DS_Store
 inst/doc
 man
+docs
 *.html
+*_cache

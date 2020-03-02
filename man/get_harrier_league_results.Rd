@@ -2,7 +2,7 @@
 % Please edit documentation in R/harrier_league.R
 \name{get_harrier_league_results}
 \alias{get_harrier_league_results}
-\title{Title}
+\title{Fetch a table containing the harrier league results}
 \usage{
 get_harrier_league_results(url)
 }
@@ -13,5 +13,5 @@ get_harrier_league_results(url)
 
 }
 \description{
-Title
+Fetch a table containing the harrier league results
 }

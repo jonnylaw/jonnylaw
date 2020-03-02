@@ -19,7 +19,7 @@ clean_results <- function(raw_results) {
 }
 
 
-#' Title
+#' Fetch a table containing the harrier league results
 #'
 #' @param url the url of a results page
 #'
@@ -32,9 +32,9 @@ get_harrier_league_results <- function(url) {
     clean_results()
 }
 
-#' Title
+#' Concatenate strings together with a comma-separated list
 #'
-#' @param strings
+#' @param strings a list of strings
 #'
 #' @return
 #'
