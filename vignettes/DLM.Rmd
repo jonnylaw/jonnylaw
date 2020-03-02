@@ -25,7 +25,17 @@ library(ggplot2)
 theme_set(theme_minimal())
 ```
 
-# Simulate from a random DLM
+A general Dynamic linear model is given by
+
+$$\begin{aligned}
+Y_t &= F_t\theta_t + v_t, &v_t &\sim \mathcal{N}(0, V_t), \\
+\theta_t &= G_t\theta_{t-1} + w_t, &w_t &\sim \mathcal{N}(0, W_t), \\
+\theta_0 &\sim \mathcal(m_0, C_0).
+\end{aligned}$$
+
+Where $Y_t$ is a $p \times 1$ vector of observations, $F_t$ is a $p \times d$ observation matrix which is typically known and transforms the latent process to the observations. $\theta_t$ is the unobserved latent process of interest at time $t$, it is a $d \times 1$ vector. $V_t$ is the $p \times p$ observation variance matrix typically taken to be diagonal. $G_t$ is the matrix controlling the advance of the latent-state, $W_t$ is the $d \times d$ process noise matrix. $\theta_0$ is the initial state. The latent state is a first order Markov chain and the observations are conditionally independent given the latent state. This allows the Kalman Filter to be used to determine the posterior distribution of the latent state of this model.
+
+## Simulate from a random DLM
 
 Using the `dlm` R package, simulate a random DLM with observation dimension `m = 3` and latent state dimension `p = 3` with `nobs = 100`.
 
@@ -57,6 +67,8 @@ Then the C++ implementation of the Kalman Filter can be carried out using the Ra
 filtered <-
   dlm_kalman_filter(t(obs), model$FF, model$GG, model$V, model$W, model$m0, model$C0)
 ```
+
+The output `filtered` is an S3 object with class `filtered` - this allows us to define behaviour for generic functions such as `plot`. The following plot shows the one-step predictive mean and 90% probability intervals with the observations in red.
 
 ```{r plot-filtered}
 plot(filtered)
@@ -92,6 +104,22 @@ filtered_state %>%
 ```
 
 ## Gibbs Sampling using FFBS
+
+Gibbs sampling is used to determine the posterior distribution of the observation and system noise covariance matrices using the `dlm` `R` library. The `dlm` library has an implementation of Forward Filtering Backward Sampling (FFBS) based on the singular value decomposition of the process-noise covariance matrix - this is a very stable algorithm however it is implemented in R and hence is relatively slow (compared to compiled languages). This package contains a re-written version of the FFBS algorithm using [RCpp](http://rcpp.org) and the [Joseph form covariance update](https://en.wikipedia.org/wiki/Kalman_filter#Derivations).
+
+The following benchmark shows the speed difference from the implementation of the FFBS algorithm in the `dlm` package and the implementation in `Rcpp`. The results plot below shows the running time across 50 iterations of the FFBS algorithm. The median execution time for the non-optimised R algorithm is `r benchmark_ffbs[1, "median"]` and the median execution time for the Rcpp implementation is `r benchmark_ffbs[2, "median"]`.
+
+```{r}
+benchmark_ffbs <-
+  bench::mark(
+    "r" = dlmBSample(dlmFilter(t(ys), model)),
+    "rcpp" = dlm_ffbs(ys, model),
+    check = FALSE,
+    iterations = 50,
+    relative = TRUE
+  )
+plot(benchmark_ffbs)
+```
 
 Sampling full rank observation and system noise matrices using the inverse Wishart distribution.
 
