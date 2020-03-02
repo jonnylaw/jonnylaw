@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarise_mcmc.R
 \name{density_plot}
 \alias{density_plot}
-\title{Title}
+\title{Plot a density plot from MCMC output}
 \usage{
 density_plot(chains)
 }
@@ -13,5 +13,5 @@ density_plot(chains)
 
 }
 \description{
-Title
+Plot a density plot from MCMC output
 }

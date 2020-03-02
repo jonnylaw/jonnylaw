@@ -7,10 +7,6 @@
 fitted_kalman_filter(ys, ws, vs, model)
 }
 \arguments{
-\item{ws}{}
-
-\item{vs}{}
-
 \item{model}{}
 }
 \value{

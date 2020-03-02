@@ -67,7 +67,7 @@ arma::colvec samplingStep(
 
 //' @export
 // [[Rcpp::export]]
-arma::mat backwardSample(
+arma::mat dlm_backward_sample(
     const arma::mat g,
     const arma::mat w,
     const arma::mat mts,

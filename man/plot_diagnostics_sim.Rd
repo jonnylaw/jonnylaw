@@ -2,16 +2,18 @@
 % Please edit documentation in R/summarise_mcmc.R
 \name{plot_diagnostics_sim}
 \alias{plot_diagnostics_sim}
-\title{Title}
+\title{Plot MCMC diagnostics with known values}
 \usage{
 plot_diagnostics_sim(chains, actual_values)
 }
 \arguments{
-\item{actual_values}{}
+\item{chains}{output from an MCMC sampler}
+
+\item{actual_values}{dataframe containing the values used to simulate synthetic data}
 }
 \value{
 
 }
 \description{
-Title
+Plot MCMC diagnostics with known values
 }

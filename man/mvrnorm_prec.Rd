@@ -7,8 +7,6 @@
 mvrnorm_prec(mu, prec)
 }
 \arguments{
-\item{mu}{}
-
 \item{prec}{}
 }
 \value{

@@ -28,11 +28,14 @@ Imports:
     parallel,
     Rcpp,
     RcppArmadillo,
-    readr
+    readr,
+    MCMCpack
 URL: https://github.com/jonnylaw/jonnyblog
 BugReports: https://github.com/jonnylaw/jonnyblog/issues
 LinkingTo: 
     Rcpp,
     RcppArmadillo
 Suggests: 
-    testthat
+    testthat,
+    rmarkdown
+VignetteBuilder: knitr

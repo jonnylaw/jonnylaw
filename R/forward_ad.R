@@ -44,20 +44,56 @@ const <- function(x) {
   dual(x, 0)
 }
 
+#' Title
+#'
+#' @param x 
+#' @param y 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plus <- function(x, y) {
   dual(x$real + y$real, x$eps + y$eps)
 }
 
+#' Title
+#'
+#' @param x 
+#' @param y 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 minus <- function(x, y) {
   dual(x$real - y$real, x$eps - y$eps)
 }
 
 
+#' Title
+#'
+#' @param x 
+#' @param y 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 times <- function(x, y) {
   dual(x$real * y$real, x$eps * y$real + y$eps * x$real)
 }
 
 
+#' Title
+#'
+#' @param x 
+#' @param y 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 divide <- function(x, y) {
   dual(
     x$real / y$real,
@@ -86,7 +122,7 @@ lift_function <- function(f) {
   }
 }
 
-#' Operators for Univariate Dual Numbers
+#' Operators for univariate Dual Numbers
 #'
 #' @param e1
 #' @param e2

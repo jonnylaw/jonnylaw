@@ -4,3 +4,15 @@ reference:
       Functions for filtering, backward sampling and Gibbs sampling for dynamic linear models.
     contents: 
       - starts_with("dlm")
+  - title: "Hamiltonian Monte Carlo"
+    desc: >
+      An R implementation of Hamiltonian Monte Carlo
+    contents:
+      - starts_with("hmc")
+  - title: "Metropolis Hastings"
+    desc: >
+      An R implementation of Metropolis Hastings
+    contents:
+  - title: "Bayesian Posterior Analysis"
+    desc: >
+      

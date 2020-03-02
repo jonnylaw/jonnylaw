@@ -3,7 +3,7 @@ using namespace Rcpp;
 // [[Rcpp::plugins(cpp11)]]
 
 // [[Rcpp::export]]
-NumericVector leapfrogCpp(
+NumericVector hmc_leapfrog_cpp(
   Function gradient,
   NumericMatrix ys,
   NumericVector qp,

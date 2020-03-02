@@ -2,16 +2,16 @@
 % Please edit documentation in R/summarise_mcmc.R
 \name{traceplot}
 \alias{traceplot}
-\title{Title}
+\title{Plot a traceplot}
 \usage{
 traceplot(chains)
 }
 \arguments{
-\item{chains}{}
+\item{paginate}{a boolean}
 }
 \value{
 
 }
 \description{
-Title
+Plot a traceplot
 }

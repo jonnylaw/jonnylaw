@@ -12,12 +12,12 @@ mvrnormsvd <- function(mean, Sigma) {
 }
 
 #' @export
-backwardSample <- function(g, w, mts, cts, ats, rts) {
-    .Call(`_jonnylaw_backwardSample`, g, w, mts, cts, ats, rts)
+dlm_backward_sample <- function(g, w, mts, cts, ats, rts) {
+    .Call(`_jonnylaw_dlm_backward_sample`, g, w, mts, cts, ats, rts)
 }
 
-leapfrogCpp <- function(gradient, ys, qp, stepSize) {
-    .Call(`_jonnylaw_leapfrogCpp`, gradient, ys, qp, stepSize)
+hmc_leapfrog_cpp <- function(gradient, ys, qp, stepSize) {
+    .Call(`_jonnylaw_hmc_leapfrog_cpp`, gradient, ys, qp, stepSize)
 }
 
 #' @export
@@ -30,6 +30,7 @@ oneStep <- function(ff, v, at, rt) {
     .Call(`_jonnylaw_oneStep`, ff, v, at, rt)
 }
 
+#' Update the state using Joseph Form Update given the newly observed data.
 #' @export
 updateState <- function(ft, at, rt, predicted, predcov, y, v) {
     .Call(`_jonnylaw_updateState`, ft, at, rt, predicted, predcov, y, v)
@@ -51,12 +52,12 @@ flatten <- function(X) {
 }
 
 #' @export
-kalmanStep <- function(yo, f, g, v, w, mt, ct) {
-    .Call(`_jonnylaw_kalmanStep`, yo, f, g, v, w, mt, ct)
+dlm_kalman_step <- function(yo, f, g, v, w, mt, ct) {
+    .Call(`_jonnylaw_dlm_kalman_step`, yo, f, g, v, w, mt, ct)
 }
 
 #' @export
-kalmanFilter <- function(ys, f, g, v, w, m0, c0) {
-    .Call(`_jonnylaw_kalmanFilter`, ys, f, g, v, w, m0, c0)
+dlm_kalman_filter <- function(ys, f, g, v, w, m0, c0) {
+    .Call(`_jonnylaw_dlm_kalman_filter`, ys, f, g, v, w, m0, c0)
 }
 

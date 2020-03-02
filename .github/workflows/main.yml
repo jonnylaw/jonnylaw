@@ -26,11 +26,11 @@ jobs:
           Rscript -e "testthat::test_dir(path = 'tests/testthat')"
       - name: Install Package
         run: |-
+          Rscript -e "install.packages('devtools'); devtools::document()" 
           R CMD INSTALL .
       - name: Render Pkgdown Site
         run: |-
-          Rscript -e "install.packages('pkgdown')"
-          Rscript -e "pkgdown::build_site()"
+          Rscript -e "install.packages('pkgdown'); pkgdown::build_site()"
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/master'
         uses: maxheld83/ghpages@v0.2.0

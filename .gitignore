@@ -3,3 +3,6 @@
 .Rproj.user
 blogdown/.
 .DS_Store
+inst/doc
+man
+*.html

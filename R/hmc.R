@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-leapfrog_step <- function(gradient, step_size, position, momentum, d) {
+hmc_leapfrog_step <- function(gradient, step_size, position, momentum, d) {
   momentum1 <- momentum + gradient(position) * 0.5 * step_size
   position1 <- position + step_size * momentum1
   momentum2 <- momentum1 + gradient(position1) * 0.5 * step_size
@@ -29,7 +29,7 @@ leapfrog_step <- function(gradient, step_size, position, momentum, d) {
 #' @export
 #'
 #' @examples
-leapfrogs <- function(gradient, step_size, l, position, momentum, d) {
+hmc_leapfrogs <- function(gradient, step_size, l, position, momentum, d) {
   for (i in 1:l) {
     pos_mom <- leapfrog_step(gradient, step_size, position, momentum, d)
     position <- pos_mom[seq_len(d)]
@@ -50,7 +50,7 @@ leapfrogs <- function(gradient, step_size, l, position, momentum, d) {
 #' @export
 #'
 #' @examples
-log_acceptance <- function(prop_position,
+hmc_log_acceptance <- function(prop_position,
                            prop_momentum,
                            position,
                            momentum,
@@ -86,19 +86,20 @@ hmc_step <- function(log_posterior, gradient, step_size, l, position, d) {
 }
 
 #' Hamiltonian Monte Carlo
+#' 
+#' Perform Hamiltonian Monte Carlo
 #'
 #' @param log_posterior
 #' @param gradient
 #' @param step_size
-#' @param l
+#' @param num_steps
 #' @param theta_0
-#' @param m
+#' @param iters
 #'
 #' @return
-#' @export
 #'
 #' @examples
-hmc <- function(log_posterior, gradient, step_size, l, theta_0, m) {
+hmc_mat <- function(log_posterior, gradient, step_size, num_steps, theta_0, iters) {
   d <- length(theta_0)
   out <- matrix(NA_real_, nrow = m, ncol = d)
   out[1, ] <- theta_0
@@ -110,22 +111,22 @@ hmc <- function(log_posterior, gradient, step_size, l, theta_0, m) {
 
 #' Hamiltonian Monte Carlo
 #'
-#' Perform HMC and return a dataframe
+#' Perform HMC and return a dataframe of parameters
 #'
 #' @param log_posterior
 #' @param gradient
 #' @param step_size
-#' @param l
+#' @param num_steps
 #' @param theta_0
-#' @param m
+#' @param iters
 #' @param parameter_names
 #'
 #' @return
 #' @export
 #'
 #' @examples
-hmc_df <- function(log_posterior, gradient, step_size, l, theta_0, m, parameter_names) {
-  mat <- hmc(log_posterior, gradient, step_size, l, theta_0, m)
+hmc <- function(log_posterior, gradient, step_size, num_steps, theta_0, iters, parameter_names) {
+  mat <- hmc_mat(log_posterior, gradient, step_size, num_steps, theta_0, iters)
   colnames(mat) <- parameter_names
   as.data.frame(mat) %>%
     mutate(iteration = row_number())

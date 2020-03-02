@@ -31,7 +31,7 @@ List oneStep(
   return List::create(ft, qt);
 }
 
-// Update the state using Joseph Form Update given the newly observed data.
+//' Update the state using Joseph Form Update given the newly observed data.
 //' @export
 // [[Rcpp::export]]
 List updateState(
@@ -77,7 +77,7 @@ arma::colvec flatten(arma::colvec X) {
 
 //' @export
 // [[Rcpp::export]]
-List kalmanStep(
+List dlm_kalman_step(
     const arma::colvec yo,
     const arma::mat f,
     const arma::mat g,
@@ -118,7 +118,7 @@ List kalmanStep(
 
 //' @export
 // [[Rcpp::export]]
-List kalmanFilter(
+List dlm_kalman_filter(
     const arma::mat ys,
     const arma::mat f,
     const arma::mat g,
@@ -138,7 +138,7 @@ List kalmanFilter(
   ct.slice(0) = c0;
 
   for (int t = 0; t < n; ++t) {
-    List mtct = kalmanStep(ys.col(t), f, g, v, w, mt.col(t), ct.slice(t));
+    List mtct = dlm_kalman_step(ys.col(t), f, g, v, w, mt.col(t), ct.slice(t));
     arma::colvec mt1 = mtct[0];
     arma::mat ct1 = mtct[1];
     arma::colvec at1 = mtct[2];
@@ -149,8 +149,12 @@ List kalmanFilter(
     rt.slice(t) = rt1;
   }
   
-  return List::create(Rcpp::Named("mt")=mt, 
-                      Rcpp::Named("ct")=ct, 
-                      Rcpp::Named("at")=at, 
-                      Rcpp::Named("rt")=rt);
+  List L = List::create(Rcpp::Named("mt")=mt, 
+                        Rcpp::Named("ct")=ct, 
+                        Rcpp::Named("at")=at, 
+                        Rcpp::Named("rt")=rt);
+  
+  L.attr("class") = "filtered";
+  
+  return L;
 }

@@ -7,18 +7,6 @@
 dlm_gibbs(ys, mod, shape_v, rate_v, shape_w, rate_w, iters, progress = FALSE)
 }
 \arguments{
-\item{ys}{}
-
-\item{mod}{}
-
-\item{shape_v}{}
-
-\item{rate_v}{}
-
-\item{shape_w}{}
-
-\item{rate_w}{}
-
 \item{iters}{}
 }
 \value{

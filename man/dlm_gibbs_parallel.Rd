@@ -16,26 +16,12 @@ dlm_gibbs_parallel(
 )
 }
 \arguments{
-\item{ys}{}
-
-\item{mod}{}
-
-\item{shape_v}{}
-
-\item{rate_v}{}
-
-\item{shape_w}{}
-
-\item{rate_w}{}
-
-\item{iters}{}
-
 \item{chains}{}
 }
 \value{
 
 }
 \description{
-Run 4 chains in parallel for DLM with diagonal state and processes noise 
+Run 4 chains in parallel for DLM with diagonal state and processes noise
 covariance matrices
 }

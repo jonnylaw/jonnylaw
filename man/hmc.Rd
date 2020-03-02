@@ -4,14 +4,22 @@
 \alias{hmc}
 \title{Hamiltonian Monte Carlo}
 \usage{
-hmc(log_posterior, gradient, step_size, l, theta_0, m)
+hmc(
+  log_posterior,
+  gradient,
+  step_size,
+  num_steps,
+  theta_0,
+  iters,
+  parameter_names
+)
 }
 \arguments{
-\item{m}{}
+\item{parameter_names}{}
 }
 \value{
 
 }
 \description{
-Hamiltonian Monte Carlo
+Perform HMC and return a dataframe of parameters
 }

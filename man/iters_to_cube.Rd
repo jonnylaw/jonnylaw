@@ -7,10 +7,6 @@
 iters_to_cube(samples, iters, parameters)
 }
 \arguments{
-\item{samples}{}
-
-\item{iters}{}
-
 \item{parameters}{}
 }
 \value{

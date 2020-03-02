@@ -2,7 +2,7 @@
 % Please edit documentation in R/forward_ad.R
 \name{Ops.dual}
 \alias{Ops.dual}
-\title{Operators for Univariate Dual Numbers}
+\title{Operators for univariate Dual Numbers}
 \usage{
 \method{Ops}{dual}(x, y)
 }
@@ -13,5 +13,5 @@
 
 }
 \description{
-Operators for Univariate Dual Numbers
+Operators for univariate Dual Numbers
 }

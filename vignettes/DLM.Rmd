@@ -1,0 +1,143 @@
+---
+title: "DLM"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{DLM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(jonnylaw)
+library(dlm)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+theme_set(theme_minimal())
+```
+
+# Simulate from a random DLM
+
+Using the `dlm` R package, simulate a random DLM with observation dimension `m = 3` and latent state dimension `p = 3` with `nobs = 100`.
+
+```{r}
+model_state <- dlmRandom(m = 3, p = 3, nobs = 100)
+```
+
+This method returns a list containing the model, latent state and observations which can be plotted using ggplot2.
+
+```{r}
+model <- model_state$mod
+state <- model_state$theta
+obs <- model_state$y
+```
+
+```{r}
+obs %>% 
+  tibble::as_tibble() %>% 
+  mutate(time = row_number()) %>% 
+  pivot_longer(-time, names_to = "variable", values_to = "value") %>% 
+  ggplot(aes(x = time, y = value, colour = variable)) +
+  geom_line() +
+  facet_wrap(~variable, ncol = 1)
+```
+
+Then the C++ implementation of the Kalman Filter can be carried out using the Random DLM.
+
+```{r}
+filtered <-
+  dlm_kalman_filter(t(obs), model$FF, model$GG, model$V, model$W, model$m0, model$C0)
+```
+
+
+
+```{r echo=FALSE}
+# TODO: Plot the filtered states and 50% intervals.
+# Write this as a plot method on the "filtered" S3 class.
+
+d <- ncol(model$FF)
+filtered_state <-
+  filtered$mt[,-1] %>% t() %>% 
+  as_tibble() 
+names(filtered_state) <- paste0(rep("state", time = d), seq_len(d))
+
+f <- model$FF
+ft <- f %*% filtered$at
+v <- model$V
+qt <- plyr::aaply(filtered$rt, 3, function(r) f %*% r %*% t(f) + v)
+```
+
+Plot the simulated state and the filtered mean.
+
+```{r echo=FALSE}
+d <- ncol(model$FF)
+filtered_state <-
+  filtered$mt[,-1] %>% t() %>% 
+  as_tibble() 
+names(filtered_state) <- paste0(rep("state", time = d), seq_len(d))
+
+filtered_state <- filtered_state %>% 
+  mutate(time = row_number()) %>% 
+  pivot_longer(-time, names_to = "variable", values_to = "filtered")
+
+state_df <- state %>% 
+  tibble::as_tibble()
+names(state_df) <- paste0(rep("state", time = d), seq_len(d))
+
+state_df <- state_df %>% 
+  mutate(time = row_number()) %>% 
+  pivot_longer(-time, names_to = "variable", values_to = "state")
+
+filtered_state %>% 
+  inner_join(state_df, by = c("time", "variable")) %>% 
+  pivot_longer(c(state, filtered), names_to = "state", values_to = "value") %>% 
+  ggplot() +
+    geom_line(aes(x = time, y = value, colour = state)) +
+    facet_wrap(~variable, ncol = 1)
+```
+
+## Gibbs Sampling using FFBS
+
+Sampling full rank observation and system noise matrices using the inverse Wishart distribution.
+
+```{r cache=TRUE}
+chains <-
+  dlm_gibbs_wishart(
+    ys = t(obs),
+    mod = model,
+    nu_v = 3,
+    psi_v = diag(3),
+    nu_w = 3,
+    psi_w = diag(3),
+    iters = 1e4,
+    progress = TRUE
+  )
+```
+
+```{r echo=FALSE}
+actual_values <- tibble(
+  parameter = c(paste0("w", 1:9), paste0("v", 1:9)),
+  actual_value = c(model$W, model$V))
+
+chains %>% 
+  filter(iteration > 1e3) %>% 
+  select(1:9, iteration) %>% 
+  pivot_longer(-iteration, names_to = "parameter", values_to = "value") %>% 
+  plot_diagnostics_sim(actual_values) +
+  labs(title = "Posterior distribution of Observation Noise Matrix")
+```
+
+```{r echo=FALSE}
+chains %>% 
+  filter(iteration > 1e3) %>% 
+  select(10:18, iteration) %>% 
+  pivot_longer(-iteration, names_to = "parameter", values_to = "value") %>% 
+  plot_diagnostics_sim(actual_values)
+```

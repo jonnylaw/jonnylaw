@@ -30,9 +30,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// backwardSample
-arma::mat backwardSample(const arma::mat g, const arma::mat w, const arma::mat mts, const arma::cube cts, const arma::mat ats, const arma::cube rts);
-RcppExport SEXP _jonnylaw_backwardSample(SEXP gSEXP, SEXP wSEXP, SEXP mtsSEXP, SEXP ctsSEXP, SEXP atsSEXP, SEXP rtsSEXP) {
+// dlm_backward_sample
+arma::mat dlm_backward_sample(const arma::mat g, const arma::mat w, const arma::mat mts, const arma::cube cts, const arma::mat ats, const arma::cube rts);
+RcppExport SEXP _jonnylaw_dlm_backward_sample(SEXP gSEXP, SEXP wSEXP, SEXP mtsSEXP, SEXP ctsSEXP, SEXP atsSEXP, SEXP rtsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,13 +42,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::cube >::type cts(ctsSEXP);
     Rcpp::traits::input_parameter< const arma::mat >::type ats(atsSEXP);
     Rcpp::traits::input_parameter< const arma::cube >::type rts(rtsSEXP);
-    rcpp_result_gen = Rcpp::wrap(backwardSample(g, w, mts, cts, ats, rts));
+    rcpp_result_gen = Rcpp::wrap(dlm_backward_sample(g, w, mts, cts, ats, rts));
     return rcpp_result_gen;
 END_RCPP
 }
-// leapfrogCpp
-NumericVector leapfrogCpp(Function gradient, NumericMatrix ys, NumericVector qp, double stepSize);
-RcppExport SEXP _jonnylaw_leapfrogCpp(SEXP gradientSEXP, SEXP ysSEXP, SEXP qpSEXP, SEXP stepSizeSEXP) {
+// hmc_leapfrog_cpp
+NumericVector hmc_leapfrog_cpp(Function gradient, NumericMatrix ys, NumericVector qp, double stepSize);
+RcppExport SEXP _jonnylaw_hmc_leapfrog_cpp(SEXP gradientSEXP, SEXP ysSEXP, SEXP qpSEXP, SEXP stepSizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,7 +56,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericMatrix >::type ys(ysSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type qp(qpSEXP);
     Rcpp::traits::input_parameter< double >::type stepSize(stepSizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(leapfrogCpp(gradient, ys, qp, stepSize));
+    rcpp_result_gen = Rcpp::wrap(hmc_leapfrog_cpp(gradient, ys, qp, stepSize));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -140,9 +140,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// kalmanStep
-List kalmanStep(const arma::colvec yo, const arma::mat f, const arma::mat g, const arma::mat v, const arma::mat w, const arma::colvec mt, const arma::mat ct);
-RcppExport SEXP _jonnylaw_kalmanStep(SEXP yoSEXP, SEXP fSEXP, SEXP gSEXP, SEXP vSEXP, SEXP wSEXP, SEXP mtSEXP, SEXP ctSEXP) {
+// dlm_kalman_step
+List dlm_kalman_step(const arma::colvec yo, const arma::mat f, const arma::mat g, const arma::mat v, const arma::mat w, const arma::colvec mt, const arma::mat ct);
+RcppExport SEXP _jonnylaw_dlm_kalman_step(SEXP yoSEXP, SEXP fSEXP, SEXP gSEXP, SEXP vSEXP, SEXP wSEXP, SEXP mtSEXP, SEXP ctSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -153,13 +153,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat >::type w(wSEXP);
     Rcpp::traits::input_parameter< const arma::colvec >::type mt(mtSEXP);
     Rcpp::traits::input_parameter< const arma::mat >::type ct(ctSEXP);
-    rcpp_result_gen = Rcpp::wrap(kalmanStep(yo, f, g, v, w, mt, ct));
+    rcpp_result_gen = Rcpp::wrap(dlm_kalman_step(yo, f, g, v, w, mt, ct));
     return rcpp_result_gen;
 END_RCPP
 }
-// kalmanFilter
-List kalmanFilter(const arma::mat ys, const arma::mat f, const arma::mat g, const arma::mat v, const arma::mat w, const arma::colvec m0, const arma::mat c0);
-RcppExport SEXP _jonnylaw_kalmanFilter(SEXP ysSEXP, SEXP fSEXP, SEXP gSEXP, SEXP vSEXP, SEXP wSEXP, SEXP m0SEXP, SEXP c0SEXP) {
+// dlm_kalman_filter
+List dlm_kalman_filter(const arma::mat ys, const arma::mat f, const arma::mat g, const arma::mat v, const arma::mat w, const arma::colvec m0, const arma::mat c0);
+RcppExport SEXP _jonnylaw_dlm_kalman_filter(SEXP ysSEXP, SEXP fSEXP, SEXP gSEXP, SEXP vSEXP, SEXP wSEXP, SEXP m0SEXP, SEXP c0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -170,7 +170,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat >::type w(wSEXP);
     Rcpp::traits::input_parameter< const arma::colvec >::type m0(m0SEXP);
     Rcpp::traits::input_parameter< const arma::mat >::type c0(c0SEXP);
-    rcpp_result_gen = Rcpp::wrap(kalmanFilter(ys, f, g, v, w, m0, c0));
+    rcpp_result_gen = Rcpp::wrap(dlm_kalman_filter(ys, f, g, v, w, m0, c0));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -178,16 +178,16 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_jonnylaw_mvrnorm", (DL_FUNC) &_jonnylaw_mvrnorm, 2},
     {"_jonnylaw_mvrnormsvd", (DL_FUNC) &_jonnylaw_mvrnormsvd, 2},
-    {"_jonnylaw_backwardSample", (DL_FUNC) &_jonnylaw_backwardSample, 6},
-    {"_jonnylaw_leapfrogCpp", (DL_FUNC) &_jonnylaw_leapfrogCpp, 4},
+    {"_jonnylaw_dlm_backward_sample", (DL_FUNC) &_jonnylaw_dlm_backward_sample, 6},
+    {"_jonnylaw_hmc_leapfrog_cpp", (DL_FUNC) &_jonnylaw_hmc_leapfrog_cpp, 4},
     {"_jonnylaw_advState", (DL_FUNC) &_jonnylaw_advState, 4},
     {"_jonnylaw_oneStep", (DL_FUNC) &_jonnylaw_oneStep, 4},
     {"_jonnylaw_updateState", (DL_FUNC) &_jonnylaw_updateState, 7},
     {"_jonnylaw_missing_f", (DL_FUNC) &_jonnylaw_missing_f, 2},
     {"_jonnylaw_missing_v", (DL_FUNC) &_jonnylaw_missing_v, 2},
     {"_jonnylaw_flatten", (DL_FUNC) &_jonnylaw_flatten, 1},
-    {"_jonnylaw_kalmanStep", (DL_FUNC) &_jonnylaw_kalmanStep, 7},
-    {"_jonnylaw_kalmanFilter", (DL_FUNC) &_jonnylaw_kalmanFilter, 7},
+    {"_jonnylaw_dlm_kalman_step", (DL_FUNC) &_jonnylaw_dlm_kalman_step, 7},
+    {"_jonnylaw_dlm_kalman_filter", (DL_FUNC) &_jonnylaw_dlm_kalman_filter, 7},
     {NULL, NULL, 0}
 };
 
