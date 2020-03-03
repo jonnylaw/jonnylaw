@@ -13,5 +13,5 @@ dlm_gibbs(ys, mod, shape_v, rate_v, shape_w, rate_w, iters, progress = FALSE)
 
 }
 \description{
-Sample diagonal system and noise covariance matrices using a Gibbs sampler
+Sample diagonal system and noise covariance matrices using a Gibbs sampler.
 }

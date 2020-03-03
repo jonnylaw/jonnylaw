@@ -96,7 +96,7 @@ dlm_sample_v <- function(y, theta, mod, shape_v, rate_v) {
 
 #' Gibbs sampling DLM
 #'
-#' Sample diagonal system and noise covariance matrices using a Gibbs sampler
+#' Sample diagonal system and noise covariance matrices using a Gibbs sampler.
 #'
 #' @param ys
 #' @param mod
@@ -207,7 +207,9 @@ dlm_sample_v_wishart <- function(y, theta, mod, shape_v, rate_v) {
   MCMCpack::riwish(ncol(theta) - 1, SSy)
 }
 
-#' Title
+#' Gibbs sampling for DLM
+#' 
+#' Sample the 
 #'
 #' @param ys 
 #' @param mod 
@@ -270,14 +272,33 @@ dlm_to_kfas <- function(dlm_model, ys, theta) {
 }
 
 #' Calculate one-step forecast mean and variance for each observation
+#' 
+#' S3 generic to calculate the one-step forecast mean f_t = F_t a_t and covariance
+#' Q_t = F_t r_t F_t^T + V_t then collect the mean and marginal variance for each forecast
+#' into a tibble.
 #'
 #' @param filtered output from dlm_kalman_filter
+#' @param interval the width of the probability interval
 #'
 #' @return
 #' @export
 #'
 #' @examples
-dlm_summarise_filtered <- function(filtered) {
+#' model <- dlmRandom(1, 1)
+#' filtered <-
+#'   dlm_kalman_filter(
+#'     ys = t(model$y),
+#'     f = model$mod$FF,
+#'     g = model$mod$GG,
+#'     v = model$mod$V,
+#'     w = model$mod$W,
+#'     m0 = model$mod$m0,
+#'     c0 = model$mod$C0
+#'   )
+#' summary(filtered)
+summary.filtered <- function(filtered, interval = 0.9) {
+  if (!dplyr::between(interval, 0, 1)) stop("Interval must be between 0 and 1")
+  
   p <- nrow(filtered$ys)
   
   f <- filtered$f
@@ -287,39 +308,39 @@ dlm_summarise_filtered <- function(filtered) {
   
   upper <-
     purrr::map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
-      p = 0.95,
+      p = 1 - ((1 - interval) / 2),
       mean = .x,
       sd = sqrt(diag(.y))
     )) %>% purrr::reduce(rbind)
   lower <-
     purrr::map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
-      p = 0.05,
+      p = (1 - interval) / 2,
       mean = .x,
       sd = sqrt(diag(.y))
     )) %>% purrr::reduce(rbind)
   
-  fitted_values <- cbind(t(ft), lower, upper, t(ys)) %>% 
+  fitted_values <- cbind(t(ft), lower, upper, t(filtered$ys)) %>% 
     tibble::as_tibble() %>% 
     dplyr::mutate(time = row_number())
   names(fitted_values) <- c(paste0(rep(c("pred", "lower", "upper", "observation"), each = p), seq_len(p)), "time")
   
   fitted_values %>%
     dplyr::select(time, dplyr::contains("pred")) %>%
-    tidyr::pivot_longer(-time, values_to = "fitted", names_prefix = "pred") %>%
+    tidyr::pivot_longer(-time, names_to = "state", values_to = "forecast", names_prefix = "pred") %>%
     dplyr::inner_join(
       fitted_values %>% dplyr::select(time, dplyr::contains("upper")) %>%
-        tidyr::pivot_longer(-time, values_to = "upper", names_prefix = "upper"),
-      by = c("time", "name")
+        tidyr::pivot_longer(-time, names_to = "state", values_to = "upper", names_prefix = "upper"),
+      by = c("time", "state")
     ) %>%
     dplyr::inner_join(
       fitted_values %>% dplyr::select(time, dplyr::contains("lower")) %>%
-        tidyr::pivot_longer(-time, values_to = "lower", names_prefix = "lower"),
-      by = c("time", "name")
+        tidyr::pivot_longer(-time, names_to = "state", values_to = "lower", names_prefix = "lower"),
+      by = c("time", "state")
     ) %>% 
     dplyr::inner_join(
       fitted_values %>% dplyr::select(time, dplyr::contains("observation")) %>%
-        tidyr::pivot_longer(-time, values_to = "observation", names_prefix = "observation"),
-      by = c("time", "name")
+        tidyr::pivot_longer(-time, names_to = "state", values_to = "observation", names_prefix = "observation"),
+      by = c("time", "state")
     )
 }
 
@@ -335,10 +356,10 @@ dlm_summarise_filtered <- function(filtered) {
 #'
 #' @examples
 plot.filtered <- function(filtered) {
-  dlm_summarise_filtered(filtered) %>% 
+  summary(filtered) %>% 
     ggplot2::ggplot(ggplot2::aes(x = time)) +
-    ggplot2::geom_line(ggplot2::aes(y = fitted)) +
+    ggplot2::geom_line(ggplot2::aes(y = forecast)) +
     ggplot2::geom_ribbon(ggplot2::aes(ymin = lower, ymax = upper), alpha = 0.3) +
     ggplot2::geom_line(ggplot2::aes(y = observation), colour = "red") +
-    ggplot2::facet_wrap(~name, ncol = 1)
+    ggplot2::facet_wrap(~state, ncol = 1)
 }

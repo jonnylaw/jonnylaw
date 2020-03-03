@@ -2,7 +2,7 @@
 % Please edit documentation in R/gibbs_sample_dlm.R
 \name{dlm_gibbs_wishart}
 \alias{dlm_gibbs_wishart}
-\title{Title}
+\title{Gibbs sampling for DLM}
 \usage{
 dlm_gibbs_wishart(ys, mod, nu_v, psi_v, nu_w, psi_w, iters, progress = FALSE)
 }
@@ -27,5 +27,5 @@ dlm_gibbs_wishart(ys, mod, nu_v, psi_v, nu_w, psi_w, iters, progress = FALSE)
 
 }
 \description{
-Title
+Sample the
 }

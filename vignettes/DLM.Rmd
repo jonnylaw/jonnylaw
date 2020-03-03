@@ -68,7 +68,13 @@ filtered <-
   dlm_kalman_filter(t(obs), model$FF, model$GG, model$V, model$W, model$m0, model$C0)
 ```
 
-The output `filtered` is an S3 object with class `filtered` - this allows us to define behaviour for generic functions such as `plot`. The following plot shows the one-step predictive mean and 90% probability intervals with the observations in red.
+The output `filtered` is an S3 object with class `filtered` - this allows us to define behaviour for generic functions such as `plot` and `summary`. `summary` returns a table containing the one-step forecast, upper and lower 90% probability intervals and the associated observation.
+
+```{r}
+summary(filtered)
+```
+
+`plot` shows the one-step predictive mean and 90% probability intervals with the observations in red.
 
 ```{r plot-filtered}
 plot(filtered)
