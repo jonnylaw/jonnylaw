@@ -40,6 +40,7 @@ Where $Y_t$ is a $p \times 1$ vector of observations, $F_t$ is a $p \times d$ ob
 Using the `dlm` R package, simulate a random DLM with observation dimension `m = 3` and latent state dimension `p = 3` with `nobs = 100`.
 
 ```{r generate-model}
+set.seed(12345)
 model_state <- dlmRandom(m = 3, p = 3, nobs = 100)
 ```
 
