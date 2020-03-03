@@ -286,21 +286,21 @@ dlm_summarise_filtered <- function(filtered) {
   qt <- plyr::alply(filtered$rt, 3, function(r) f %*% r %*% t(f) + v)
   
   upper <-
-    map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
+    purrr::map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
       p = 0.95,
       mean = .x,
       sd = sqrt(diag(.y))
-    )) %>% reduce(rbind)
+    )) %>% purrr::reduce(rbind)
   lower <-
-    map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
+    purrr::map2(plyr::alply(ft, 2, c), qt, ~ qnorm(
       p = 0.05,
       mean = .x,
       sd = sqrt(diag(.y))
-    )) %>% reduce(rbind)
+    )) %>% purrr::reduce(rbind)
   
   fitted_values <- cbind(t(ft), lower, upper, t(ys)) %>% 
     tibble::as_tibble() %>% 
-    mutate(time = row_number())
+    dplyr::mutate(time = row_number())
   names(fitted_values) <- c(paste0(rep(c("pred", "lower", "upper", "observation"), each = p), seq_len(p)), "time")
   
   fitted_values %>%

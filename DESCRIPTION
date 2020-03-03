@@ -27,6 +27,8 @@ Imports:
     knitr,
     magrittr,
     parallel,
+    plyr,
+    purrr,
     Rcpp,
     RcppArmadillo,
     readr,
