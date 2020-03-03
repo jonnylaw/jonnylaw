@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 This is where I keep the code associated with my blog, you can see the latest posts at [jonnylaw.rocks](https://jonnylaw.rocks).
 
-This is a documentation wesite at https://jonnylaw.github.io/jonnylaw.
+There is a documentation website at https://jonnylaw.github.io/jonnylaw.
 
 ## Package Installation
 

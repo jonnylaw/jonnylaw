@@ -32,7 +32,8 @@ Imports:
     Rcpp,
     RcppArmadillo,
     readr,
-    MCMCpack
+    MCMCpack,
+    ggbeeswarm
 URL: https://github.com/jonnylaw/jonnyblog
 BugReports: https://github.com/jonnylaw/jonnyblog/issues
 LinkingTo: 
