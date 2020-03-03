@@ -113,19 +113,21 @@ filtered_state %>%
 
 Gibbs sampling is used to determine the posterior distribution of the observation and system noise covariance matrices using the `dlm` `R` library. The `dlm` library has an implementation of Forward Filtering Backward Sampling (FFBS) based on the singular value decomposition of the process-noise covariance matrix - this is a very stable algorithm however it is implemented in R and hence is relatively slow (compared to compiled languages). This package contains a re-written version of the FFBS algorithm using [RCpp](http://rcpp.org) and the [Joseph form covariance update](https://en.wikipedia.org/wiki/Kalman_filter#Derivations).
 
-The following benchmark shows the speed difference from the implementation of the FFBS algorithm in the `dlm` package and the implementation in `Rcpp`. The results plot below shows the running time across 50 iterations of the FFBS algorithm. The median execution time for the non-optimised R algorithm is `r benchmark_ffbs[1, "median"]` and the median execution time for the Rcpp implementation is `r benchmark_ffbs[2, "median"]`.
+The following benchmark shows the speed difference from the implementation of the FFBS algorithm in the `dlm` package and the implementation in `Rcpp`. The results plot below shows the running time across 50 iterations of the FFBS algorithm. 
 
 ```{r}
 benchmark_ffbs <-
   bench::mark(
-    "r" = dlmBSample(dlmFilter(t(ys), model)),
-    "rcpp" = dlm_ffbs(ys, model),
+    "R" = dlmBSample(dlmFilter(obs, model)),
+    "Rcpp" = dlm_ffbs(t(obs), model),
     check = FALSE,
     iterations = 50,
     relative = TRUE
   )
 plot(benchmark_ffbs)
 ```
+
+The median execution time for the non-optimised R algorithm is `r benchmark_ffbs[1, "median"]` and the median execution time for the Rcpp implementation is `r benchmark_ffbs[2, "median"]`.
 
 Sampling full rank observation and system noise matrices using the inverse Wishart distribution.
 
