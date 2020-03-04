@@ -198,7 +198,9 @@ clean_results <- function(raw_results) {
 #'
 #' @examples
 get_harrier_league_results <- function(url) {
-  htmltab::htmltab(doc = url) %>%
+  xml2::read_html(url) %>% 
+    rvest::html_table() %>% 
+    purrr::pluck(1) %>% 
     clean_results()
 }
 

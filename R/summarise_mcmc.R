@@ -78,6 +78,40 @@ plot_diagnostics <- function(chains) {
   gridExtra::grid.arrange(p1, p2)
 }
 
+#' Calculate Effective Sample Size
+#'
+#' @param values 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+effective_size = function(values) {
+  n = length(values)
+  floor(n / (1 + 2 * sum(acf(x = values, plot = F)$acf)))
+}
+
+#' Plot the prior and posterior
+#'
+#' @param chain 
+#' @param parameters 
+#' @param prior 
+#' @param limits 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+prior_posterior = function(chain, parameters, prior, limits) {
+  chain %>%
+    dplyr::filter(parameter %in% parameters) %>%
+    ggplot2::ggplot(ggplot2::aes(x = value)) +
+    ggplot2::geom_line(aes(y = ..density.., colour = 'Posterior'), stat = 'density') +
+    ggplot2::stat_function(fun = prior, ggplot2::aes(colour = 'Prior'), xlim = limits) +
+    ggplot2::theme(legend.position = c(0.25, 0.9), title = ggplot2::element_blank()) +
+    ggplot2::facet_wrap(~parameter, ncol = 1)
+}
+
 #' Title
 #'
 #' @param chains

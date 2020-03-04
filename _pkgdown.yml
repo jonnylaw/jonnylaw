@@ -28,6 +28,8 @@ reference:
       - plot_pdf
       - latex_table_sim
       - plot_diagnostics_sim
+      - prior_posterior
+      - effective_size
   - title: "Forward Mode Automatic Differentiation"
     desc: >
       A simple implementation of forward mode automatic differentiation
