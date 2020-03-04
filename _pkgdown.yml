@@ -39,3 +39,8 @@ reference:
       Functions to download results from the North East Harrier League
     contents:
       - get_division_results
+      - get_course_list
+      - get_results_home
+      - parse_results_table
+      - clean_results
+      - get_harrier_league_results

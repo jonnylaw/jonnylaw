@@ -2,7 +2,7 @@
 % Please edit documentation in R/harrier_league.R
 \name{clean_results}
 \alias{clean_results}
-\title{Title}
+\title{Clean one fixture of scraped results}
 \usage{
 clean_results(raw_results)
 }
@@ -13,5 +13,5 @@ clean_results(raw_results)
 
 }
 \description{
-Title
+Clean one fixture of scraped results
 }

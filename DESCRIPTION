@@ -33,13 +33,15 @@ Imports:
     RcppArmadillo,
     readr,
     MCMCpack,
-    ggbeeswarm
+    ggbeeswarm,
+    xml2,
+    rvest
 URL: https://github.com/jonnylaw/jonnyblog
 BugReports: https://github.com/jonnylaw/jonnyblog/issues
 LinkingTo: 
     Rcpp,
     RcppArmadillo
 Suggests: 
-    testthat,
+    testthat (>= 2.1.0),
     rmarkdown
 VignetteBuilder: knitr

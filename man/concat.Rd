@@ -2,7 +2,7 @@
 % Please edit documentation in R/harrier_league.R
 \name{concat}
 \alias{concat}
-\title{Concatenate strings together with a comma-separated list}
+\title{Concatenate strings together as a comma-separated list}
 \usage{
 concat(strings)
 }
@@ -13,5 +13,5 @@ concat(strings)
 
 }
 \description{
-Concatenate strings together with a comma-separated list
+Concatenate strings together as a comma-separated list
 }
