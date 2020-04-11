@@ -1,0 +1,124 @@
+---
+title: "Hamiltonian Monte Carlo"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{hmc}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(jonnylaw)
+library(tibble)
+library(ggplot2)
+theme_set(theme_minimal())
+```
+
+## Vanilla HMC
+
+This example is taken from [a blog post](https://jonnylaw.rocks/blog/hamiltonian_monte_carlo_in_r/) that I wrote on Hamiltonian Monte Carlo. See that post for details of deriving the un-normalised log-posterior and gradients. I also compare the efficiency of HMC and the random-walk Metropolis algorithm by comparing the effective sample size per second.
+
+```{r, echo=F}
+bivariate_normal <- function(theta, n) {
+  mu1 <- theta[1]
+  sigma1 <- theta[2]
+  mu2 <- theta[3]
+  sigma2 <- theta[4]
+  x <- rnorm(n / 2, mean = mu1, sd = sigma1)
+  y <- rnorm(n / 2, mean = mu2, sd = sigma2)
+  tibble(x, y)
+}
+
+theta = c(5.0, 0.5, 2.0, 1.5)
+names(theta) <- paste(c("mu", "sigma"), rep(1:2, each = 2), sep = "_")
+set.seed(123)
+sims = bivariate_normal(theta, 1000)
+xs <- as.matrix(sims)
+qplot(xs[,1], xs[,2])
+```
+
+```{r, echo=FALSE}
+gradient_bivariate <- function(ys) {
+  function(theta) {
+    mu <- c(theta[1], theta[3])
+    sigma <- c(theta[2], theta[4])
+    n <- nrow(ys)
+    c(1/sigma[1]^2*sum(ys[,1] - mu[1]) - mu[1]/9,
+      -n/sigma[1] + sum((ys[,1] - mu[1])^2) / sigma[1]^3 + 2/sigma[1] - 3,
+      1/sigma[2]^2*sum(ys[,2] - mu[2]) - mu[2]/9,
+      -n/sigma[2] + sum((ys[,2] - mu[2])^2) / sigma[2]^3 + 2/sigma[2] - 3)
+  }
+}
+log_likelihood <- function(xs, theta) {
+  apply(xs, 1, function(x) dnorm(x[1], mean = theta[1], sd = theta[2], log = T) + 
+          dnorm(x[2], mean = theta[3], sd = theta[4], log = T)) %>% sum()
+}
+log_prior <- function(theta) {
+  dnorm(theta[1], sd = 3, log = T) + 
+    dnorm(theta[3], sd = 3, log = T) + 
+    dgamma(theta[2], shape = 3.0, rate = 3.0, log = T) + 
+    dgamma(theta[4], shape = 3.0, rate = 3.0, log = T)
+}
+
+transform <- function(theta) {
+  c(theta[1], exp(theta[2]), theta[3], exp(theta[4]))
+}
+
+inv_transform <- function(theta) {
+  c(theta[1], log(theta[2]), theta[3], log(theta[4]))
+}
+
+log_posterior_bivariate <- function(xs) 
+  function(theta)
+    log_likelihood(xs, theta) + log_prior(theta)
+
+log_jacobian <- function(theta) 
+  c(0, theta[2], 0, theta[4])
+
+deriv_log_jacobian <- function(theta) 
+  c(0, 1, 0, 1)
+
+# evaluate the log-posterior on the appropriate scale, using the transform function
+bounded_log_posterior_bivariate <- function(xs) {
+  function(theta) {
+    log_posterior_bivariate(xs)(transform(theta)) + sum(log_jacobian(theta))
+  }
+}
+
+bounded_gradient_bivariate <- function(xs) {
+  function(theta) {
+    gradient_bivariate(xs)(transform(theta)) + deriv_log_jacobian(theta)
+  }
+}
+```
+
+```{r}
+future::plan(future::multiprocess())
+iters <- jonnylaw::hmc(
+  log_posterior = bounded_log_posterior_bivariate(xs),
+  gradient = bounded_gradient_bivariate(xs),
+  step_size = 0.01,
+  n_steps = 4,
+  init_parameters = inv_transform(theta),
+  iters = 2e3
+)
+```
+
+```{r}
+actual_values <- tibble(
+  parameter = names(theta),
+  actual_value = theta
+)
+iters %>% 
+  mutate_at(vars(starts_with("sigma")), exp) %>% 
+  pivot_longer(-c("iteration", "chain"), names_to = "parameter", values_to = "value") %>% 
+  jonnylaw::plot_diagnostics_sim(actual_values)
+```
+

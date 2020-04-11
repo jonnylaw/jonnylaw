@@ -4,10 +4,21 @@
 \alias{hmc_step}
 \title{HMC Step}
 \usage{
-hmc_step(log_posterior, gradient, step_size, l, position, d)
+hmc_step(log_posterior, gradient, step_size, n_steps, position, d)
 }
 \arguments{
-\item{position}{}
+\item{log_posterior}{a function for the unnormalised log-posterior
+from parameters -> log-likelihood}
+
+\item{gradient}{the gradient of the log_posterior}
+
+\item{step_size}{the step size of the leapfrog steps}
+
+\item{n_steps}{the number of leapfrog steps}
+
+\item{position}{the current value of the parameter vector}
+
+\item{d}{the dimension of the parameter vector}
 }
 \value{
 

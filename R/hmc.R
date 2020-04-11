@@ -6,7 +6,6 @@
 #' @param momentum
 #'
 #' @return
-#' @export
 #'
 #' @examples
 hmc_leapfrog_step <- function(gradient, step_size, position, momentum, d) {
@@ -17,21 +16,22 @@ hmc_leapfrog_step <- function(gradient, step_size, position, momentum, d) {
   matrix(c(position1, momentum2), ncol = d * 2)
 }
 
-#' Perform l Leapfrog steps
+#' Perform n_steps Leapfrog steps
 #'
-#' @param gradient
-#' @param step_size
-#' @param l
-#' @param position
-#' @param momentum
+#' @param gradient the gradient of the target
+#' @param step_size the step size of the leapfrog step
+#' @param n_steps the total number of steps
+#' @param position the current value of the parameter vector, termed position in Hamiltonian
+#' dynamics
+#' @param momentum the current "momentum" in the HMC sampler
+#' @param d dimension of parmaeter vector
 #'
 #' @return
-#' @export
 #'
 #' @examples
-hmc_leapfrogs <- function(gradient, step_size, l, position, momentum, d) {
-  for (i in 1:l) {
-    pos_mom <- leapfrog_step(gradient, step_size, position, momentum, d)
+hmc_leapfrogs <- function(gradient, step_size, n_steps, position, momentum, d) {
+  for (i in seq_len(n_steps)) {
+    pos_mom <- hmc_leapfrog_step(gradient, step_size, position, momentum, d)
     position <- pos_mom[seq_len(d)]
     momentum <- pos_mom[-seq_len(d)]
   }
@@ -47,37 +47,37 @@ hmc_leapfrogs <- function(gradient, step_size, l, position, momentum, d) {
 #' @param log_posterior
 #'
 #' @return
-#' @export
 #'
 #' @examples
 hmc_log_acceptance <- function(prop_position,
-                           prop_momentum,
-                           position,
-                           momentum,
-                           log_posterior) {
+                               prop_momentum,
+                               position,
+                               momentum,
+                               log_posterior) {
   a <- log_posterior(prop_position) + sum(dnorm(prop_momentum, log = T)) -
     log_posterior(position) - sum(dnorm(momentum, log = T))
-  if_else(is.na(a), -Inf, min(a, 0.0))
+  dplyr::if_else(is.na(a), -Inf, min(a, 0.0))
 }
 
 #' HMC Step
 #'
-#' @param log_posterior
-#' @param gradient
-#' @param step_size
-#' @param l
-#' @param position
+#' @param log_posterior a function for the unnormalised log-posterior
+#' from parameters -> log-likelihood
+#' @param gradient the gradient of the log_posterior
+#' @param step_size the step size of the leapfrog steps
+#' @param n_steps the number of leapfrog steps
+#' @param position the current value of the parameter vector
+#' @param d the dimension of the parameter vector
 #'
 #' @return
-#' @export
 #'
 #' @examples
-hmc_step <- function(log_posterior, gradient, step_size, l, position, d) {
-  momentum <- rnorm(d)
-  pos_mom <- leapfrogs(gradient, step_size, l, position, momentum, d)
+hmc_step <- function(log_posterior, gradient, step_size, n_steps, position, d) {
+  momentum <- rnorm(d) # Sample initial momentum from standard normal 
+  pos_mom <- hmc_leapfrogs(gradient, step_size, n_steps, position, momentum, d)
   prop_position <- pos_mom[seq_len(d)]
   prop_momentum <- pos_mom[-seq_len(d)]
-  a <- log_acceptance(prop_position, prop_momentum, position, momentum, log_posterior)
+  a <- hmc_log_acceptance(prop_position, prop_momentum, position, momentum, log_posterior)
   if (log(runif(1)) < a) {
     prop_position
   } else {
@@ -86,48 +86,65 @@ hmc_step <- function(log_posterior, gradient, step_size, l, position, d) {
 }
 
 #' Hamiltonian Monte Carlo
-#' 
+#'
 #' Perform Hamiltonian Monte Carlo
 #'
-#' @param log_posterior
-#' @param gradient
-#' @param step_size
-#' @param num_steps
-#' @param theta_0
-#' @param iters
+#' @param log_posterior a function for the unnormalised log-posterior
+#' from parameters -> log-likelihood
+#' @param gradient the gradient of the log_posterior
+#' @param step_size the step size of the leapfrog steps
+#' @param n_steps the number of leapfrog steps
+#' @param init_parameters a named vector containing the initial parameters
+#' @param iters the number of iterations
 #'
-#' @return
+#' @return a matrix of iterations from the HMC algorithm representing draws
+#' from the posterior distribution
 #'
 #' @examples
-hmc_mat <- function(log_posterior, gradient, step_size, num_steps, theta_0, iters) {
-  d <- length(theta_0)
-  out <- matrix(NA_real_, nrow = m, ncol = d)
-  out[1, ] <- theta_0
-  for (i in 2:m) {
-    out[i, ] <- hmc_step(log_posterior, gradient, step_size, l, out[i - 1, ], d)
+hmc_helper <- function(log_posterior, gradient, step_size, n_steps, init_parameters, iters) {
+  d <- length(init_parameters)
+  out <- matrix(NA_real_, nrow = iters, ncol = d)
+  out[1, ] <- init_parameters
+  for (i in 2:iters) {
+    out[i, ] <- hmc_step(log_posterior, gradient, step_size, n_steps, out[i - 1, ], d)
   }
-  out
+  colnames(out) <- names(init_parameters)
+  tibble::as_tibble(out) %>%
+    dplyr::mutate(iteration = dplyr::row_number())
 }
 
 #' Hamiltonian Monte Carlo
 #'
-#' Perform HMC and return a dataframe of parameters
+#' Run multiple HMC chains and return a dataframe of parameters
+#' 
+#' To run this in parallel call
+#' `future::plan(future::multiprocess())` before this function
 #'
-#' @param log_posterior
-#' @param gradient
-#' @param step_size
-#' @param num_steps
-#' @param theta_0
-#' @param iters
-#' @param parameter_names
+#' @param log_posterior a function for the unnormalised log-posterior
+#' from parameters -> log-likelihood
+#' @param gradient the gradient of the log_posterior
+#' @param step_size the step size of the leapfrog steps
+#' @param n_steps the number of leapfrog steps
+#' @param init_parameters a named vector of initial parameters
+#' @param iters the number of iterations 
+#' @param chains the number of chains
 #'
 #' @return
 #' @export
 #'
 #' @examples
-hmc <- function(log_posterior, gradient, step_size, num_steps, theta_0, iters, parameter_names) {
-  mat <- hmc_mat(log_posterior, gradient, step_size, num_steps, theta_0, iters)
-  colnames(mat) <- parameter_names
-  as.data.frame(mat) %>%
-    mutate(iteration = row_number())
+hmc <- function(log_posterior, gradient, step_size, n_steps, init_parameters, iters, chains = 2) {
+  furrr::future_map_dfr(
+    .x = seq_len(chains),
+    .f = function(x)
+      jonnylaw:::hmc_helper(
+        log_posterior,
+        gradient,
+        step_size,
+        n_steps,
+        init_parameters,
+        iters
+      ),
+    .id = "chain"
+  )
 }

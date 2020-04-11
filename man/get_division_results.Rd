@@ -16,6 +16,6 @@ get_division_results(raw_results, counters = 4)
 }
 \description{
 This function calculates the position of a club in their respective division
-by summing the positions of the first n = `counters` and sorting the sum
+by summing the positions of the first n = \code{counters} and sorting the sum
 from smallest to largest.
 }

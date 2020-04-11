@@ -122,8 +122,7 @@ benchmark_ffbs <-
     "R" = dlmBSample(dlmFilter(obs, model)),
     "Rcpp" = dlm_ffbs(t(obs), model),
     check = FALSE,
-    iterations = 50,
-    relative = TRUE
+    iterations = 50
   )
 plot(benchmark_ffbs)
 ```

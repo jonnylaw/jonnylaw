@@ -2,16 +2,27 @@
 % Please edit documentation in R/hmc.R
 \name{hmc_leapfrogs}
 \alias{hmc_leapfrogs}
-\title{Perform l Leapfrog steps}
+\title{Perform n_steps Leapfrog steps}
 \usage{
-hmc_leapfrogs(gradient, step_size, l, position, momentum, d)
+hmc_leapfrogs(gradient, step_size, n_steps, position, momentum, d)
 }
 \arguments{
-\item{momentum}{}
+\item{gradient}{the gradient of the target}
+
+\item{step_size}{the step size of the leapfrog step}
+
+\item{n_steps}{the total number of steps}
+
+\item{position}{the current value of the parameter vector, termed position in Hamiltonian
+dynamics}
+
+\item{momentum}{the current "momentum" in the HMC sampler}
+
+\item{d}{dimension of parmaeter vector}
 }
 \value{
 
 }
 \description{
-Perform l Leapfrog steps
+Perform n_steps Leapfrog steps
 }

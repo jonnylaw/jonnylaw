@@ -35,5 +35,7 @@ LinkingTo:
     RcppArmadillo
 Suggests: 
     testthat (>= 2.1.0),
-    rmarkdown
+    rmarkdown,
+    knitr
 VignetteBuilder: knitr
+Roxygen: list(markdown = TRUE)
