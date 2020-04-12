@@ -7,7 +7,7 @@ test_that(
   hedgehog::forall(
     list(a = hedgehog::gen.c(hedgehog::gen.element(-100:100))),
     function(a) {
-      expect_equal(object = f(var(a))$eps, expected = 10 * a + 3)
+      expect_equal(object = f(variable(a))$eps, expected = 10 * a + 3)
     }
   )
 )

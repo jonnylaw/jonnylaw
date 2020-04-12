@@ -17,6 +17,8 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(jonnylaw)
 library(tibble)
+library(tidyr)
+library(dplyr)
 library(ggplot2)
 theme_set(theme_minimal())
 ```
@@ -111,7 +113,7 @@ iters <- jonnylaw::hmc(
 )
 ```
 
-```{r}
+```{r, echo=FALSE}
 actual_values <- tibble(
   parameter = names(theta),
   actual_value = theta
@@ -120,5 +122,58 @@ iters %>%
   mutate_at(vars(starts_with("sigma")), exp) %>% 
   pivot_longer(-c("iteration", "chain"), names_to = "parameter", values_to = "value") %>% 
   jonnylaw::plot_diagnostics_sim(actual_values)
+```
+
+## Tuning the HMC algorithm
+
+We can use the Dual Averaging algorithm to learn the step size of the leapfrog steps.
+
+```{r}
+iters <- hmc_da(
+  log_posterior = bounded_log_posterior_bivariate(xs),
+  gradient = bounded_gradient_bivariate(xs),
+  n_steps = 4,
+  init_parameters = inv_transform(theta),
+  iters = 2e3, 
+  chains = 2
+)
+```
+
+
+```{r}
+actual_values <- tibble(
+  parameter = names(theta),
+  actual_value = theta
+)
+
+iters %>% 
+  filter(iteration > 1e3) %>% # Remove warmup iterations
+  mutate_at(vars(starts_with("sigma")), exp) %>% 
+  pivot_longer(-c("iteration"), names_to = "parameter", values_to = "value") %>% 
+  jonnylaw::plot_diagnostics_sim(actual_values)
+```
+
+```{r}
+iters %>% 
+  mutate(step_size = exp(log_step_size), harmonic_mean_step_size = exp(log_step_size_bar)) %>% 
+  pivot_longer(c("harmonic_mean_step_size", "step_size"), names_to = "key", values_to = "value") %>% filter(iteration > 100) %>% 
+  ggplot(aes(x = iteration, y = value, colour = key)) +
+  geom_line() +
+  facet_wrap(~key, scales = "free_y", ncol = 1) +
+  theme(legend.position = "none") +
+  labs(title = "Evolution of the step size and harmonic mean of the step size", 
+       subtitle = "Adaptation is stopped at 1,000 iterations and the harmonic mean of the step-size at iteration 1,000 is used in the HMC algorithm")
+```
+
+We can use empirical HMC to learn the optimal number of leapfrog steps.
+
+```{r, eval=FALSE}
+iters <- jonnylaw(
+  log_posterior = bounded_log_posterior_bivariate(xs),
+  gradient = bounded_gradient_bivariate(xs),
+  n_steps = 4,
+  init_parameters = inv_transform(theta),
+  iters = 2e3
+)
 ```
 
