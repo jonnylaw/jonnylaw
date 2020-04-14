@@ -2,6 +2,7 @@
 using namespace Rcpp;
 // [[Rcpp::plugins(cpp11)]]
 
+// TODO: This should use function pointers
 // [[Rcpp::export]]
 NumericVector hmc_leapfrog_cpp(
   Function gradient,

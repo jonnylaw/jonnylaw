@@ -82,7 +82,6 @@ metropolis <- function(theta, log_posterior, proposal, m, chains = 1, parallel =
 #' @param proposal 
 #'
 #' @return
-#' @export
 #'
 #' @examples
 pmmh_step <- function(theta, ll, log_posterior, proposal) {
@@ -129,7 +128,6 @@ pmmh_helper <- function(theta, log_posterior, proposal, m) {
 #' @param chains 
 #'
 #' @return
-#' @export
 #'
 #' @examples
 pmmh <- function(theta, log_posterior, proposal, m, chains = 2) {
