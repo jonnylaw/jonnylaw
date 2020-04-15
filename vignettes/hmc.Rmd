@@ -149,7 +149,7 @@ actual_values <- tibble(
 iters %>% 
   filter(iteration > 1e3) %>% # Remove warmup iterations
   mutate_at(vars(starts_with("sigma")), exp) %>% 
-  pivot_longer(-c("iteration"), names_to = "parameter", values_to = "value") %>% 
+  pivot_longer(-c("iteration", "chain"), names_to = "parameter", values_to = "value") %>% 
   jonnylaw::plot_diagnostics_sim(actual_values)
 ```
 
@@ -157,7 +157,7 @@ iters %>%
 iters %>% 
   mutate(step_size = exp(log_step_size), harmonic_mean_step_size = exp(log_step_size_bar)) %>% 
   pivot_longer(c("harmonic_mean_step_size", "step_size"), names_to = "key", values_to = "value") %>% filter(iteration > 100) %>% 
-  ggplot(aes(x = iteration, y = value, colour = key)) +
+  ggplot(aes(x = iteration, y = value, colour = key, group = chain)) +
   geom_line() +
   facet_wrap(~key, scales = "free_y", ncol = 1) +
   theme(legend.position = "none") +
@@ -168,7 +168,7 @@ iters %>%
 We can use empirical HMC to learn the optimal number of leapfrog steps.
 
 ```{r, eval=FALSE}
-iters <- jonnylaw(
+iters <- ehmc(
   log_posterior = bounded_log_posterior_bivariate(xs),
   gradient = bounded_gradient_bivariate(xs),
   n_steps = 4,

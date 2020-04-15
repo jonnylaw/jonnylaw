@@ -40,16 +40,18 @@ Where $Y_t$ is a $p \times 1$ vector of observations, $F_t$ is a $p \times d$ ob
 Using the `dlm` R package, simulate a random DLM with observation dimension `m = 3` and latent state dimension `p = 3` with `nobs = 100`.
 
 ```{r generate-model}
-set.seed(12345)
-model_state <- dlmRandom(m = 3, p = 3, nobs = 100)
+set.seed(123)
+model <- dlmRandom(m = 3, p = 3)
+model$V <- diag(diag(model$V))
+model$W <- diag(diag(model$W))
 ```
 
-This method returns a list containing the model, latent state and observations which can be plotted using ggplot2.
+We can then simulate data from the model
 
-```{r split-model-components}
-model <- model_state$mod
-state <- model_state$theta
-obs <- model_state$y
+```{r simulate-data}
+sims <- dlmForecast(model, sampleNew = 100)
+state <- matrix(unlist(sims$newStates), ncol = 3)
+obs <- matrix(unlist(sims$newObs), ncol = 3)
 ```
 
 ```{r plot-observations}
@@ -129,17 +131,17 @@ plot(benchmark_ffbs)
 
 The median execution time for the non-optimised R algorithm is `r benchmark_ffbs[1, "median"]` and the median execution time for the Rcpp implementation is `r benchmark_ffbs[2, "median"]`.
 
-Sampling full rank observation and system noise matrices using the inverse Wishart distribution.
+Sampling diagonal observation and system noise matrices using the inverse Gamma distribution.
 
 ```{r gibbs-sampling, cache=TRUE, eval=FALSE}
 chains <-
-  dlm_gibbs_wishart(
+  dlm_gibbs(
     ys = t(obs),
     mod = model,
-    nu_v = 3,
-    psi_v = diag(3),
-    nu_w = 3,
-    psi_w = diag(3),
+    shape_v = 3,
+    rate_v = 3,
+    shape_w = 3,
+    rate_w = 3,
     iters = 1e4,
     progress = TRUE
   )
@@ -147,12 +149,10 @@ chains <-
 
 ```{r plot-observation-diagnostics, echo=FALSE, eval=FALSE}
 actual_values <- tibble(
-  parameter = c(paste0("w", seq_len(length(model$W))), paste0("v", seq_len(length(model$V)))),
-  actual_value = c(model$W, model$V))
+  parameter = c(paste0("w", seq_len(nrow(model$W))), paste0("v", seq_len(nrow(model$V)))),
+  actual_value = c(diag(model$W), diag(model$V)))
 
 chains %>% 
-  thin(4) %>% 
-  filter(iteration > 1e3) %>% 
   select(contains("v"), iteration) %>% 
   pivot_longer(-iteration, names_to = "parameter", values_to = "value") %>% 
   plot_diagnostics_sim(actual_values)
@@ -160,7 +160,6 @@ chains %>%
 
 ```{r plot-system-diagnostics, echo=FALSE, eval=FALSE}
 chains %>% 
-  filter(iteration > 1e3) %>% 
   select(contains("w"), iteration) %>% 
   pivot_longer(-iteration, names_to = "parameter", values_to = "value") %>% 
   plot_diagnostics_sim(actual_values)
