@@ -1,0 +1,29 @@
+---
+title: "automatic_differentiation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{automatic_differentiation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(jonnylaw)
+```
+
+## Forward Mode Automatic Differentiation for univariate functions
+
+```{r}
+f <- function(x) {
+  1 / x
+}
+
+f(variable(10))
+```
