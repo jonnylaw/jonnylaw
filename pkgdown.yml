@@ -1,0 +1,7 @@
+pandoc: 2.2.1
+pkgdown: 1.4.1
+pkgdown_sha: ~
+articles:
+  automatic_differentiation: automatic_differentiation.html
+  hmc: hmc.html
+
