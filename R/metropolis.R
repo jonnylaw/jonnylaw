@@ -24,7 +24,7 @@ metropolis_step <- function(theta, log_posterior, proposal) {
 #' Metropolis Helper
 #'
 #' This implements the metropolis algorithm given an initial parameter vector,
-#' the unnormalised log-posterior and a symmetric proposal distribution
+#' the un-normalised log-posterior and a symmetric proposal distribution
 #'
 #' @param theta
 #' @param log_posterior

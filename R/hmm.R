@@ -73,7 +73,7 @@ hmm_log_likelihood <- function(ys, x0, transition_matrix, observation) {
   purrr::reduce(ys, function(x, y) ll_step(x, y, observation, transition_matrix), .init = init)[[1]]
 }
 
-#' Title
+#' HMM Backward Smoothing
 #'
 #' @param beta 
 #' @param y 
@@ -87,7 +87,7 @@ hmm_backward_step <- function(beta, y, transition_matrix, observation) {
   normalise(transition_matrix %*% (observation(y) * beta))
 }
 
-#' Title
+#' 
 #'
 #' @param ys 
 #' @param transition_matrix 
@@ -99,12 +99,12 @@ hmm_backward_step <- function(beta, y, transition_matrix, observation) {
 #' @examples
 hmm_backward <- function(ys, transition_matrix, observation) {
   purrr::accumulate(
-    rev(ys)[-1],
+    rev(ys),
     hmm_backward_step,
     observation = observation, 
     transition_matrix = transition_matrix,
     .init = c(1, 1)
-  )
+  ) %>% rev()
 }
 
 #' Perform smoothing using the forward-backward algorithm
@@ -119,9 +119,10 @@ hmm_backward <- function(ys, transition_matrix, observation) {
 #'
 #' @examples
 hmm_forward_backward <- function(ys, x0, transition_matrix, observation) {
+  n <- length(ys)
   f <- hmm_forward(ys, x0, transition_matrix, observation)
   b <- hmm_backward(ys, transition_matrix, observation)
-  purrr::map2(f, b, ~ normalise(.x * .y))
+  purrr::map2(f, b[-(n+1)], ~ normalise(.x * .y))
 }
 
 #' Normalise such that the values of the vector sum to one

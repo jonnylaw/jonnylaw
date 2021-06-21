@@ -1,0 +1,106 @@
+---
+title: "Linear Regression HMC"
+author: "Jonny Law"
+date: "12/04/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Linear Regression
+
+Let's perform a Bayesian linear regression using the built-in cars dataset.
+
+```{r}
+cars %>% 
+  ggplot(aes(x = speed, y = dist)) + 
+  geom_point()
+```
+
+
+First construct the log-likelihood and the prior. The parameters are unbounded.
+
+```{r}
+log_posterior <- function(theta) {
+  p <- 2
+  xs <- cars$speed
+  ys <- cars$dist
+  n <- length(ys)
+  beta <- theta[seq_len(p)]
+  sigma <- exp(theta[p + 1])
+  sum(dnorm(
+    x = ys,
+    mean = cbind(rep(1, n), xs) %m% as.matrix(beta),
+    sd = sqrt(sigma),
+    log = TRUE
+  )) + sum(dnorm(beta, 0, 5, log = TRUE)) + 
+    log(MCMCpack::dinvgamma(sigma, 3, 1/3))
+}
+
+theta = c(-17, 4, log(0.5))
+log_posterior(theta)
+```
+
+Now differentiate the log-posterior. There are a few options for this
+
+1. NumDeriv to take an approximate derivative
+2. [autodiffr](https://non-contradiction.github.io/autodiffr/index.html) to automatically differentiate the function
+3. Calculate the derivative by hand
+
+```{r}
+diff_ll <- function(theta) {
+  numDeriv::grad(log_posterior, theta)
+}
+
+diff_ll(theta)
+```
+
+# Auto diff
+
+[autodiffr](https://non-contradiction.github.io/autodiffr/index.html) uses the Julia Auto differentiation library and hence requires an installation of Julia...
+
+```{r}
+library(autodiffr)
+
+ad_log_posterior <- makeGradFunc(log_posterior)
+ad_log_posterior(theta)
+ad_grad(log_posterior, c(1, 2, 3))
+```
+
+
+```{r}
+lm_iters <-
+  hmc(
+    log_posterior,
+    ad_log_posterior, 
+    0.002,
+    5, 
+    c(beta = 3, sigma = log(1.5)),
+    2e3,
+    chains = 2)
+```
+
+```{r}
+lm_iters %>% 
+  mutate(step_size = exp(log_step_size), harmonic_mean_step_size = exp(log_step_size_bar)) %>% 
+  pivot_longer(c("harmonic_mean_step_size", "step_size"), names_to = "key", values_to = "value") %>% filter(iteration > 100) %>% 
+  ggplot(aes(x = iteration, y = value, colour = key, group = chain)) +
+  geom_line() +
+  facet_wrap(~key, scales = "free_y", ncol = 1) +
+  theme(legend.position = "none") +
+  labs(title = "Evolution of the step size and harmonic mean of the step size", 
+       subtitle = "Adaptation is stopped at 1,000 iterations and the harmonic mean of the step-size\nat iteration 1,000 is used in the HMC algorithm")
+```
+
+
+```{r}
+lm_iters %>% 
+  filter(iteration > 1e3) %>% # Remove warmup iterations
+  mutate_at(vars(starts_with("sigma")), exp) %>% 
+  pivot_longer(c("beta", "sigma"), names_to = "parameter", values_to = "value") %>% 
+  jonnylaw::plot_diagnostics()
+```
+
+
