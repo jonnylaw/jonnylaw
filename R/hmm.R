@@ -87,7 +87,7 @@ hmm_backward_step <- function(beta, y, transition_matrix, observation) {
   normalise(transition_matrix %*% (observation(y) * beta))
 }
 
-#' 
+#' Backward smoothing for the HMM
 #'
 #' @param ys 
 #' @param transition_matrix 

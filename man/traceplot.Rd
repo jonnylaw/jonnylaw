@@ -7,7 +7,7 @@
 traceplot(chains)
 }
 \arguments{
-\item{paginate}{a boolean}
+\item{paginate}{boolean indicating whether to paginate the plots}
 }
 \value{
 

@@ -7,7 +7,7 @@
 lift_function(f)
 }
 \arguments{
-\item{f}{}
+\item{f}{a function operating on dual numbers}
 }
 \value{
 

@@ -4,16 +4,16 @@
 \alias{hmm_log_likelihood}
 \title{Marginal log-likelihood HMM}
 \usage{
-hmm_log_likelihood(ys, x0, observation, transition_matrix)
+hmm_log_likelihood(ys, x0, transition_matrix, observation)
 }
 \arguments{
 \item{ys}{a sequence of observations}
 
 \item{x0}{the initial state distribution}
 
-\item{observation}{the observation distribution}
-
 \item{transition_matrix}{the transition matrix}
+
+\item{observation}{the observation distribution}
 }
 \value{
 

@@ -2,22 +2,22 @@
 % Please edit documentation in R/hmm.R
 \name{hmm_backward_step}
 \alias{hmm_backward_step}
-\title{Title}
+\title{HMM Backward Smoothing}
 \usage{
-hmm_backward_step(beta, y, observation, transition_matrix)
+hmm_backward_step(beta, y, transition_matrix, observation)
 }
 \arguments{
 \item{beta}{}
 
 \item{y}{}
 
-\item{observation}{}
+\item{transition_matrix}{the transition matrix}
 
-\item{transition_matrix}{}
+\item{observation}{the observation distribution}
 }
 \value{
 
 }
 \description{
-Title
+HMM Backward Smoothing
 }

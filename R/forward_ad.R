@@ -29,7 +29,7 @@ variable <- function(x) {
   dual(x, 1)
 }
 
-#' Title
+#' Build a constant dual number
 #'
 #' @param x
 #'
@@ -44,7 +44,7 @@ const <- function(x) {
   dual(x, 0)
 }
 
-#' Title
+#' Addition in the dual numbers
 #'
 #' @param x 
 #' @param y 
@@ -57,7 +57,7 @@ plus <- function(x, y) {
   dual(x$real + y$real, x$eps + y$eps)
 }
 
-#' Title
+#' Minus in the dual numbers
 #'
 #' @param x 
 #' @param y 
@@ -71,7 +71,7 @@ minus <- function(x, y) {
 }
 
 
-#' Title
+#' Multiplication in the dual numbers
 #'
 #' @param x 
 #' @param y 
@@ -85,7 +85,7 @@ times <- function(x, y) {
 }
 
 
-#' Title
+#' Divide in the dual numbers
 #'
 #' @param x 
 #' @param y 
@@ -104,8 +104,7 @@ divide <- function(x, y) {
 #' Lift a function to operate on bare numbers
 #'
 #'
-#'
-#' @param f
+#' @param f a function operating on dual numbers
 #'
 #' @return
 #'

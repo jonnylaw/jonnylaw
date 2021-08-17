@@ -2,7 +2,7 @@
 % Please edit documentation in R/forward_ad.R
 \name{minus}
 \alias{minus}
-\title{Title}
+\title{Minus in the dual numbers}
 \usage{
 minus(x, y)
 }
@@ -15,5 +15,5 @@ minus(x, y)
 
 }
 \description{
-Title
+Minus in the dual numbers
 }

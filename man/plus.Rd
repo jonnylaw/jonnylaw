@@ -2,7 +2,7 @@
 % Please edit documentation in R/forward_ad.R
 \name{plus}
 \alias{plus}
-\title{Title}
+\title{Addition in the dual numbers}
 \usage{
 plus(x, y)
 }
@@ -15,5 +15,5 @@ plus(x, y)
 
 }
 \description{
-Title
+Addition in the dual numbers
 }

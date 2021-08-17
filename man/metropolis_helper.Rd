@@ -14,5 +14,5 @@ metropolis_helper(theta, log_posterior, proposal, m)
 }
 \description{
 This implements the metropolis algorithm given an initial parameter vector,
-the unnormalised log-posterior and a symmetric proposal distribution
+the un-normalised log-posterior and a symmetric proposal distribution
 }

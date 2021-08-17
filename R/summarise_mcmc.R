@@ -16,7 +16,7 @@ thin <- function(df, nth) {
 #' Plot a traceplot
 #'
 #' @param chains
-#' @param paginate a boolean
+#' @param paginate boolean indicating whether to paginate the plots
 #'
 #' @return
 #' @export

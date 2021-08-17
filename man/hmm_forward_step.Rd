@@ -4,14 +4,14 @@
 \alias{hmm_forward_step}
 \title{Forward step for HMM}
 \usage{
-hmm_forward_step(alpha, y, observation, transition_matrix)
+hmm_forward_step(alpha, y, transition_matrix, observation)
 }
 \arguments{
 \item{alpha}{The previous posterior distribution over the discrete states of the HMM}
 
-\item{observation}{the observation distribution}
-
 \item{transition_matrix}{the transition matrix}
+
+\item{observation}{the observation distribution}
 
 \item{x0}{the initial state distribution}
 }

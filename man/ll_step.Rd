@@ -4,16 +4,16 @@
 \alias{ll_step}
 \title{Title}
 \usage{
-ll_step(state, y, observation, transition_matrix)
+ll_step(state, y, transition_matrix, observation)
 }
 \arguments{
 \item{state}{}
 
 \item{y}{}
 
-\item{observation}{}
-
 \item{transition_matrix}{}
+
+\item{observation}{}
 }
 \value{
 

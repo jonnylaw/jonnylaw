@@ -2,7 +2,7 @@
 % Please edit documentation in R/forward_ad.R
 \name{times}
 \alias{times}
-\title{Title}
+\title{Multiplication in the dual numbers}
 \usage{
 times(x, y)
 }
@@ -15,5 +15,5 @@ times(x, y)
 
 }
 \description{
-Title
+Multiplication in the dual numbers
 }

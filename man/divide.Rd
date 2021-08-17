@@ -2,7 +2,7 @@
 % Please edit documentation in R/forward_ad.R
 \name{divide}
 \alias{divide}
-\title{Title}
+\title{Divide in the dual numbers}
 \usage{
 divide(x, y)
 }
@@ -15,5 +15,5 @@ divide(x, y)
 
 }
 \description{
-Title
+Divide in the dual numbers
 }

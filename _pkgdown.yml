@@ -1,20 +1,16 @@
 reference:
-  - title: "Bayesian Inference for DLMS"
-    desc: >
-      Functions for filtering, backward sampling and Gibbs sampling for dynamic linear models.
-    contents: 
-      - starts_with("dlm")
   - title: "Hamiltonian Monte Carlo"
     desc: >
       An R implementation of Hamiltonian Monte Carlo
     contents:
-      - starts_with("hmc")
+      - contains("hmc")
+      - update_step_size
+      - 
   - title: "Metropolis Hastings"
     desc: >
       An R implementation of Metropolis Hastings
     contents:
-      - metropolis
-      - metropolis_step
+      - starts_with("metropolis")
   - title: "Bayesian Posterior Analysis"
     desc: >
       Functions for summarising the output of MCMC algorithms
@@ -30,12 +26,29 @@ reference:
       - plot_diagnostics_sim
       - prior_posterior
       - effective_size
+  - title: "Continuous time Markov Chains"
+    desc: >
+      Functions for simulating from and performing inference in CTMC models
+    contents:
+      - contains("ctmc")
+  - title: "Hidden Markov Models"
+    desc: >
+      Functions for simulating from and performing inference in HMMs
+    contents:
+      - contains("hmm")    
   - title: "Forward Mode Automatic Differentiation"
     desc: >
       A simple implementation of forward mode automatic differentiation
     contents:
       - dual
       - variable
+      - const
+      - Ops.dual
+      - lift_function
+      - plus
+      - minus
+      - times
+      - divide
   - title: "Parsing the North East Harrier League website"
     desc: >
       Functions to download results from the North East Harrier League

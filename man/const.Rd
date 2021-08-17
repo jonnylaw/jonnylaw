@@ -2,7 +2,7 @@
 % Please edit documentation in R/forward_ad.R
 \name{const}
 \alias{const}
-\title{Title}
+\title{Build a constant dual number}
 \usage{
 const(x)
 }
@@ -13,5 +13,5 @@ const(x)
 
 }
 \description{
-Title
+Build a constant dual number
 }
