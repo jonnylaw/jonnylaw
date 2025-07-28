@@ -16,8 +16,8 @@ RUN apt-get update \
 COPY . .
 
 # Install Dependencies
-RUN Rscript -e "install.packages('remotes', repos = 'https://demo.rstudiopm.com/all/__linux__/bionic/latest')"
-RUN Rscript -e "remotes::install_deps(dependencies = TRUE, repos = 'https://demo.rstudiopm.com/all/__linux__/bionic/latest')"
+RUN Rscript -e "install.packages('remotes')"
+RUN Rscript -e "remotes::install_deps(dependencies = TRUE)"
 
 # Test package
 RUN Rscript  -e "testthat::test_dir(path = 'tests/testthat')"
