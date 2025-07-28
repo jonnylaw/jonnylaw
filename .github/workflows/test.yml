@@ -1,9 +1,6 @@
-name: Test and install package and render pkgdown website
+name: Test and install package
 
-on:
-  push:
-    branches:
-      - main
+on: pull_request
 
 jobs:
   build:
@@ -38,15 +35,3 @@ jobs:
       - name: Test Package
         run: |
           Rscript -e "testthat::test_dir(path = 'tests/testthat')"
-          
-      - name: Render Pkgdown Site
-        run: |
-          Rscript -e "install.packages('pkgdown', repos = 'https://cran.rstudio.com/')"
-          Rscript -e "pkgdown::build_site()"
-          
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
-        uses: maxheld83/ghpages@v0.2.0
-        env:
-          BUILD_DIR: "docs"
-          GH_PAT: ${{ secrets.GH_PAT }}
