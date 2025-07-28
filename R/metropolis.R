@@ -59,7 +59,6 @@ metropolis_helper <- function(theta, log_posterior, proposal, m) {
 #' @examples
 metropolis <- function(theta, log_posterior, proposal, m, chains = 1, parallel = FALSE) {
   if (parallel) {
-    future::plan(future::multiprocess)
     mh_samples <- furrr::future_map_dfr(
       .x = 1:chains,
       .f = function(x) metropolis_helper(theta, log_posterior, proposal, m),
