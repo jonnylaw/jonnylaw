@@ -1,3 +1,5 @@
+library(jonnylaw)
+
 f <- function(x) {
   5 * x * x + 3 * x + 10
 }

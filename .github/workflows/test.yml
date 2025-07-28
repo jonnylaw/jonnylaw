@@ -28,6 +28,10 @@ jobs:
           Rscript -e "install.packages('remotes', repos = 'https://cran.rstudio.com/')"
           Rscript -e "remotes::install_deps(dependencies = TRUE, repos = 'https://cran.rstudio.com/')"
           
+      - name: Install Package
+        run: |
+          R CMD INSTALL .
+          
       - name: Test Package
         run: |
           Rscript -e "testthat::test_dir(path = 'tests/testthat')"
